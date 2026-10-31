@@ -1,0 +1,106 @@
+# Protein Sequence Analysis 
+ 
+protein = input("Enter Protein Sequence: ").upper() 
+ 
+print("\nProtein Length:", len(protein)) 
+ 
+# Amino Acid Count 
+print("\nAmino Acid Count\n") 
+ 
+amino = "ACDEFGHIKLMNPQRSTVWY" 
+ 
+for aa in amino: 
+    count = protein.count(aa) 
+ 
+    if count > 0: 
+        print(aa, ":", count) 
+ 
+# Approximate Molecular Weight 
+weight = len(protein) * 110 
+ 
+print("\nApproximate Molecular Weight:", 
+      weight, "Daltons")
+
+** Protein seq :ACDEFGHIKLMNPQRSTVWY
+
+**Explanation of Protein Sequence Analysis Code (4–5 Lines)
+This program performs protein sequence analysis using Python.
+It accepts a protein sequence from the user and calculates its total length.
+It counts the occurrence of each amino acid in the protein sequence.
+It calculates the approximate molecular weight by multiplying protein length by 110 Daltons.
+Finally, it displays the protein length, amino acid count, and approximate molecular weight.
+
+Q1. What is a protein?
+Ans: A protein is a biological molecule made up of amino acids.
+
+Q2. What is protein sequence analysis?
+Ans: It is the study of amino acid sequences in proteins.
+
+Q3. Which programming language is used?
+Ans: Python.
+
+Q4. What is an amino acid?
+Ans: Amino acids are the building blocks of proteins.
+
+Q5. How many standard amino acids are present in proteins?
+Ans: 20 standard amino acids.
+
+Code-Based Questions
+
+Q6. Why do we use input()?
+Ans: To accept the protein sequence from the user.
+
+Q7. What is the use of .upper()?
+Ans: It converts lowercase letters into uppercase.
+
+Q8. What does len(protein) do?
+Ans: It calculates the total length of the protein sequence.
+
+Q9. What is the purpose of amino = "ACDEFGHIKLMNPQRSTVWY"?
+Ans: It stores the one-letter codes of 20 standard amino acids.
+
+Q10. Why do we use a for loop?
+Ans: To check each amino acid one by one.
+
+Q11. What does protein.count(aa) do?
+Ans: It counts the occurrence of a particular amino acid.
+
+Q12. Why do we use if count > 0?
+Ans: To display only amino acids present in the sequence.
+
+Molecular Weight Questions
+
+Q13. What is molecular weight?
+Ans: It is the total mass of a protein molecule.
+
+Q14. What is the unit of molecular weight?
+Ans: Dalton (Da).
+
+Q15. What is the formula used in this program?
+Ans: Approximate Molecular Weight = Protein Length × 110.
+
+Q16. Why do we multiply by 110?
+Ans: Because 110 Daltons is the approximate average mass of an amino acid residue in a protein.
+
+Q17. Is the calculated molecular weight exact?
+Ans: No, it is an approximate value.
+
+Important Viva Questions
+
+Q18. What is the difference between DNA and protein?
+Ans:
+
+DNA contains nucleotides.
+Proteins contain amino acids.
+
+Q19. What are the one-letter codes of amino acids?
+Ans: Each amino acid is represented by a single letter, such as A for Alanine and G for Glycine.
+
+Q20. What is the output of this program?
+Ans: It displays protein length, amino acid counts, and approximate molecular weight.
+
+Q21. What happens if an amino acid is repeated?
+Ans: Its count increases.
+
+Q22. What is the purpose of this experiment?
+Ans: To analyze a protein sequence and calculate its basic properties.

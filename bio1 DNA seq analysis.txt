@@ -1,0 +1,195 @@
+# DNA Sequence Analysis
+
+dna = input("Enter DNA Sequence: ").upper()
+
+# Length
+print("\nSequence Length:", len(dna))
+
+# GC Content
+g = dna.count("G")
+c = dna.count("C")
+
+gc = ((g + c) / len(dna)) * 100
+
+print("GC Content:", round(gc, 2), "%")
+
+# Motif Search
+motif = input("Enter Motif: ").upper()
+
+positions = []
+
+for i in range(len(dna) - len(motif) + 1):
+    if dna[i:i + len(motif)] == motif:
+        positions.append(i)
+
+print("Motif Found At:", positions)
+
+# Start Codon
+start = dna.find("ATG")
+
+if start != -1:
+    print("Start Codon Found At:", start)
+else:
+    print("Start Codon Not Found")
+
+# Stop Codons
+stop_codons = ["TAA", "TAG", "TGA"]
+
+for stop in stop_codons:
+    pos = dna.find(stop)
+
+    if pos != -1:
+        print(stop, "Found At:", pos)
+
+# Reverse Complement
+reverse = dna[::-1]
+
+complement = ""
+
+for base in reverse:
+    if base == "A":
+        complement += "T"
+    elif base == "T":
+        complement += "A"
+    elif base == "G":
+        complement += "C"
+    elif base == "C":
+        complement += "G"
+
+print("Reverse Complement:", complement)
+
+
+
+
+
+
+This program performs DNA sequence analysis using Python.
+It calculates the total length and GC content (percentage of G and C bases) of the DNA sequence.
+It searches for a specific motif and finds its position in the sequence.
+It identifies the start codon (ATG) and stop codons (TAA, TAG, TGA).
+Finally, it generates the reverse complement of the DNA sequence by replacing complementary bases (A-T and G-C).
+
+
+Q1. What is DNA?
+Ans: DNA stands for Deoxyribonucleic Acid. It carries genetic information.
+
+Q2. What are the four bases of DNA?
+Ans: Adenine (A), Thymine (T), Guanine (G), and Cytosine (C).
+
+Q3. What is the purpose of this program?
+Ans: To analyze a DNA sequence by calculating its length, GC content, motif positions, start codon, stop codons, and reverse complement.
+
+Q4. Which programming language is used?
+Ans: Python.
+
+Q5. Why do we use input()?
+Ans: To accept input from the user.
+
+Q6. Why do we use .upper()?
+Ans: To convert lowercase letters into uppercase.
+
+2. DNA Length and GC Content
+
+Q7. How do we calculate DNA sequence length?
+Ans: By using the len() function.
+
+Q8. What is GC content?
+Ans: It is the percentage of Guanine (G) and Cytosine (C) bases in DNA.
+
+Q9. Which function counts G and C?
+Ans: The count() function.
+
+Q10. What is the formula for GC content?
+Ans:
+GC Content = (G + C) / Total Length × 100.
+
+Q11. Why do we use round(gc, 2)?
+Ans: To display the GC content up to two decimal places.
+
+3. Motif Search
+
+Q12. What is a motif in DNA?
+Ans: A motif is a short, specific sequence of nucleotides.
+
+Q13. What is the purpose of motif searching?
+Ans: To find the position of a specific DNA pattern.
+
+Q14. What is a list in Python?
+Ans: A list stores multiple values in a single variable.
+
+Q15. Why do we use append()?
+Ans: To add motif positions to the list.
+
+Q16. What is slicing in Python?
+Ans: Slicing is used to extract a part of a sequence.
+
+4. Start and Stop Codons
+
+Q17. What is a codon?
+Ans: A codon is a group of three nucleotides.
+
+Q18. What is a start codon?
+Ans: ATG is the start codon that generally initiates protein synthesis.
+
+Q19. What are stop codons?
+Ans: TAA, TAG, and TGA.
+
+Q20. What is the use of the find() function?
+Ans: It finds the first occurrence of a substring.
+
+Q21. What does find() return if the sequence is not found?
+Ans: It returns -1.
+
+Q22. Why do we use if start != -1?
+Ans: To check whether the start codon exists.
+
+5. Reverse Complement
+
+Q23. What is a reverse complement?
+Ans: It is the reverse of a DNA sequence with complementary bases.
+
+Q24. What are complementary DNA bases?
+Ans:
+
+A pairs with T.
+T pairs with A.
+G pairs with C.
+C pairs with G.
+
+Q25. What does dna[::-1] do?
+Ans: It reverses the DNA sequence.
+
+Q26. Why do we use a for loop?
+Ans: To process each nucleotide one by one.
+
+Q27. What is string concatenation?
+Ans: Combining two or more strings into one string.
+
+Q28. Why do we initialize complement = ""?
+Ans: To create an empty string to store complementary bases.
+
+6. General Python Questions
+
+Q29. What is a variable?
+Ans: A variable stores data.
+
+Q30. What is a loop?
+Ans: A loop executes a set of statements repeatedly.
+
+Q31. What is an if-else statement?
+Ans: It is used for decision-making.
+
+Q32. What is the difference between find() and count()?
+Ans:
+
+find() returns the first position of a substring.
+count() returns the number of occurrences.
+
+Q33. What is the use of print()?
+Ans: To display output on the screen.
+
+Q34. What happens if the DNA sequence is empty?
+Ans: The GC content calculation causes a division-by-zero error.
+
+Q35. What is the output of dna.count("A")?
+Ans: It returns the total number of A bases in the DNA sequence.

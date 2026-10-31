@@ -1,0 +1,186 @@
+import pandas as pd
+
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+
+# Read Dataset
+data = pd.read_csv(r"C:\Users\HP\Downloads\genomic_data.csv")
+
+# Remove Extra Spaces from Column Names
+data.columns = data.columns.str.strip()
+
+print("Genomic Dataset\n")
+print(data)
+
+# Features
+X = data[["GeneFeature1", "GeneFeature2"]]
+
+# Target
+y = data["Class"]
+
+# Split Dataset
+# Split Dataset
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.3, random_state=1
+)
+
+# Create Model
+model = RandomForestClassifier(
+    n_estimators=100,
+    random_state=1
+)
+
+# Train Model
+model.fit(X_train, y_train)
+
+# Prediction
+prediction = model.predict(X_test)
+
+print("\nActual Class")
+print(y_test.values)
+
+print("\nPredicted Class")
+print(prediction)
+
+# Accuracy
+accuracy = accuracy_score(y_test, prediction)
+
+print("\nAccuracy:", round(accuracy * 100, 2), "%")
+
+
+dataset:genomic_data.csv
+
+GeneFeature1,GeneFeature2,Class 
+2.5,3.0,Healthy 
+1.2,0.8,Disease 
+3.1,3.5,Healthy 
+0.9,1.1,Disease 
+2.8,2.9,Healthy 
+1.0,0.7,Disease 
+3.2,3.8,Healthy 
+0.8,1.0,Disease 
+2.9,3.1,Healthy 
+1.1,0.9,Disease
+
+
+
+This program performs genomic data classification using the Random Forest algorithm.
+It reads genomic data from a CSV file using the Pandas library.
+It selects GeneFeature1 and GeneFeature2 as input features and Class as the target.
+It splits the dataset into training and testing data and trains the Random Forest model.
+Finally, it predicts the gene classes and calculates the model accuracy.
+
+
+What is Genomic Data?
+Ans: Genomic data contains information about an organism's genes and DNA.
+
+Q2. What is the purpose of this program?
+Ans: To classify genomic data into Healthy and Disease categories.
+
+Q3. Which programming language is used?
+Ans: Python.
+
+Q4. Which library is used for data analysis?
+Ans: Pandas.
+
+Q5. What is Machine Learning?
+Ans: Machine Learning allows computers to learn from data and make predictions.
+
+Random Forest Questions
+
+Q6. What is Random Forest?
+Ans: Random Forest is a supervised machine learning algorithm that uses multiple decision trees.
+
+Q7. Is Random Forest supervised or unsupervised?
+Ans: Supervised learning.
+
+Q8. What is a Decision Tree?
+Ans: A Decision Tree is a model that makes decisions using conditions.
+
+Q9. Why do we use Random Forest?
+Ans: To improve prediction performance by combining multiple decision trees.
+
+Q10. What is n_estimators=100?
+Ans: It means the Random Forest uses 100 decision trees.
+
+Dataset Questions
+
+Q11. What is a CSV file?
+Ans: CSV stands for Comma-Separated Values.
+
+Q12. What is a feature?
+Ans: A feature is an input variable used for prediction.
+
+Q13. What is a target variable?
+Ans: A target variable is the output that the model predicts.
+
+Q14. What are GeneFeature1 and GeneFeature2?
+Ans: They are input features used for classification.
+
+Q15. What is the Class column?
+Ans: It contains the target categories Healthy and Disease.
+
+Training and Testing Questions
+
+Q16. What is train_test_split()?
+Ans: It divides the dataset into training and testing parts.
+
+Q17. What is training data?
+Ans: Data used to train the machine learning model.
+
+Q18. What is testing data?
+Ans: Data used to evaluate the trained model.
+
+Q19. What is test_size=0.3?
+Ans: It means 30% of the data is used for testing.
+
+Q20. What is random_state=1?
+Ans: It ensures the same data split when the code is run again.
+
+Prediction and Accuracy Questions
+
+Q21. What is model.fit()?
+Ans: It trains the model using training data.
+
+Q22. What is model.predict()?
+Ans: It predicts the output for testing data.
+
+Q23. What is accuracy?
+Ans: Accuracy measures how many predictions are correct.
+
+Q24. Which function calculates accuracy?
+Ans: accuracy_score().
+
+Q25. What is your model accuracy?
+Ans: My model accuracy is 66.67%.
+
+Q26. How is accuracy calculated?
+Ans:
+
+Accuracy = (Correct Predictions / Total Predictions) × 100.
+
+Q27. Why is your accuracy 66.67%?
+Ans: Because the model correctly predicted 2 out of 3 testing samples.
+
+Q28. What does round(accuracy * 100, 2) do?
+Ans: It converts accuracy into a percentage and rounds it to two decimal places.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

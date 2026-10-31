@@ -1,0 +1,118 @@
+import pandas as pd
+
+# Read Dataset
+data =pd.read_csv(r"C:\Users\HP\Downloads\rna_seq.csv")
+
+print("RNA-Seq Dataset\n")
+print(data)
+
+# Calculate Fold Change
+data["Fold Change"] = data["Treated"] / data["Control"]
+
+status = []
+
+for fc in data["Fold Change"]:
+    if fc >= 2:
+        status.append("Upregulated")
+    elif fc <= 0.5:
+        status.append("Downregulated")
+    else:
+        status.append("No Significant Change")
+
+data["Status"] = status
+
+print("\nDifferential Gene Expression\n")
+print(data)
+
+Create a CSV file named rna_seq.csv. 
+Gene,Control,Treated 
+Gene1,50,120 
+Gene2,80,60 
+Gene3,100,250 
+Gene4,150,140 
+Gene5,60,180 
+Gene6,200,100
+
+**Explanation of Code (4–5 Lines)
+This program performs RNA-Seq gene expression analysis using Python and Pandas.
+It reads gene expression data from the rna_seq.csv file using read_csv().
+It calculates Fold Change by dividing Treated values by Control values.
+It classifies genes as Upregulated, Downregulated, or No Significant Change based on Fold Change.
+Finally, it displays the dataset with Fold Change and gene expression status.
+
+What is RNA-Seq?
+Ans: RNA-Seq is a technique used to study gene expression.
+
+Q2. What is the purpose of this program?
+Ans: To analyze gene expression changes between control and treated samples.
+
+Q3. Which programming language is used?
+Ans: Python.
+
+Q4. Which library is used in this program?
+Ans: Pandas.
+
+Q5. Why do we use Pandas?
+Ans: To handle and analyze data.
+
+Dataset Questions
+
+Q6. What is a CSV file?
+Ans: CSV stands for Comma-Separated Values.
+
+Q7. What is read_csv()?
+Ans: It reads data from a CSV file.
+
+Q8. What is the purpose of print(data)?
+Ans: It displays the dataset.
+
+Q9. What are Control and Treated samples?
+Ans:
+
+Control: Normal or untreated sample.
+Treated: Sample exposed to a treatment.
+Fold Change Questions
+
+Q10. What is Fold Change?
+Ans: It measures the change in gene expression between two conditions.
+
+Q11. What is the formula for Fold Change?
+Ans: Fold Change = Treated / Control.
+
+Q12. What is Upregulation?
+Ans: An increase in gene expression.
+
+Q13. What is Downregulation?
+Ans: A decrease in gene expression.
+
+Q14. What is No Significant Change?
+Ans: Gene expression has not crossed the defined thresholds for upregulation or downregulation.
+
+Q15. What does fc >= 2 mean?
+Ans: Fold Change is greater than or equal to 2.
+
+Q16. What does fc <= 0.5 mean?
+Ans: Fold Change is less than or equal to 0.5.
+
+Python Questions
+
+Q17. What is a DataFrame?
+Ans: A DataFrame is a two-dimensional tabular data structure in Pandas.
+
+Q18. What is a list?
+Ans: A list stores multiple values.
+
+Q19. Why do we use append()?
+Ans: To add elements to a list.
+
+Q20. What is a for loop?
+Ans: It repeats statements for each item in a sequence.
+
+Q21. What is an if-elif-else statement?
+Ans: It is used for decision-making.
+
+Q22. What does data["Fold Change"] represent?
+Ans: It accesses the Fold Change column.
+
+Q23. What does data["Status"] = status do?
+Ans: It adds a new Status column to the dataset.
