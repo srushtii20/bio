@@ -61,7 +61,7 @@ print("Reverse Complement:", complement)
 
 
 
-
+**Enter DNA Sequence: ATGCGATACGCTTGA ( output)
 
 This program performs DNA sequence analysis using Python.
 It calculates the total length and GC content (percentage of G and C bases) of the DNA sequence.
