@@ -1,0 +1,596 @@
+# ============================================================
+# PRACTICAL: DATA AGGREGATION
+# ANALYZING SALES PERFORMANCE IN A RETAIL COMPANY
+# ============================================================
+
+# 1. IMPORT REQUIRED LIBRARIES
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# ============================================================
+# 2. LOAD THE DATASET
+# ============================================================
+
+df = pd.read_csv(
+    r"C:\Users\HP\Downloads\retail_sales_dataset.csv"
+)
+
+print("Dataset Loaded Successfully!")
+
+print("\nFirst Five Records:")
+print(df.head())
+
+# ============================================================
+# 3. EXPLORE THE DATASET
+# ============================================================
+
+print("\nDataset Shape:")
+print(df.shape)
+
+print("\nDataset Information:")
+df.info()
+
+print("\nStatistical Summary:")
+print(df.describe(include="all"))
+
+print("\nColumn Names:")
+print(df.columns.tolist())
+
+print("\nMissing Values:")
+print(df.isnull().sum())
+
+print("\nDuplicate Records:")
+print(df.duplicated().sum())
+
+# ============================================================
+# 4. CLEAN COLUMN NAMES
+# ============================================================
+
+df.columns = (
+    df.columns
+    .str.strip()
+    .str.lower()
+    .str.replace(" ", "_")
+)
+
+print("\nCleaned Column Names:")
+print(df.columns.tolist())
+
+# ============================================================
+# 5. DATA CLEANING
+# ============================================================
+
+# Remove duplicate records
+
+df.drop_duplicates(inplace=True)
+
+# Handle missing numerical values
+
+numeric_cols = df.select_dtypes(
+    include=np.number
+).columns
+
+for col in numeric_cols:
+
+    df[col] = df[col].fillna(
+        df[col].median()
+    )
+
+# Handle missing categorical values
+
+categorical_cols = df.select_dtypes(
+    include="object"
+).columns
+
+for col in categorical_cols:
+
+    if df[col].isnull().sum() > 0:
+
+        df[col] = df[col].fillna(
+            df[col].mode()[0]
+        )
+
+print("\nData Cleaning Completed!")
+
+# ============================================================
+# 6. IDENTIFY RELEVANT VARIABLES
+# ============================================================
+
+print("\nRelevant Variables:")
+
+print("Date: Transaction date")
+
+print("Product Category: Category of product")
+
+print("Quantity: Number of products sold")
+
+print("Total Amount: Total sales amount")
+
+# ============================================================
+# 7. CONVERT DATE COLUMN
+# ============================================================
+
+if "date" in df.columns:
+
+    df["date"] = pd.to_datetime(
+        df["date"],
+        errors="coerce"
+    )
+
+print("\nDate Conversion Completed!")
+
+# ============================================================
+# 8. CALCULATE TOTAL SALES
+# ============================================================
+
+# Create Total Amount if it does not exist
+
+if "total_amount" not in df.columns:
+
+    if "price_per_unit" in df.columns and "quantity" in df.columns:
+
+        df["total_amount"] = (
+            df["price_per_unit"] * df["quantity"]
+        )
+
+    elif "total_sales" in df.columns:
+
+        df["total_amount"] = df["total_sales"]
+
+    else:
+
+        raise ValueError(
+            "Sales amount column not found in dataset."
+        )
+
+print("\nTotal Sales Column:")
+print(df["total_amount"].head())
+
+# ============================================================
+# 9. GROUP SALES BY REGION
+# ============================================================
+
+if "region" in df.columns:
+
+    region_sales = df.groupby("region")[
+        "total_amount"
+    ].sum().sort_values(ascending=False)
+
+    print("\nTOTAL SALES BY REGION:")
+    print(region_sales)
+
+else:
+
+    print("\nRegion column is not available in this dataset.")
+
+    print("Regional sales aggregation cannot be performed.")
+
+# ============================================================
+# 10. BAR PLOT - SALES BY REGION
+# ============================================================
+
+if "region" in df.columns:
+
+    plt.figure(figsize=(9, 5))
+
+    region_sales.plot(kind="bar")
+
+    plt.title("Total Sales by Region")
+
+    plt.xlabel("Region")
+
+    plt.ylabel("Total Sales Amount")
+
+    plt.xticks(rotation=45)
+
+    plt.tight_layout()
+
+    plt.show()
+
+# ============================================================
+# 11. PIE CHART - SALES DISTRIBUTION BY REGION
+# ============================================================
+
+if "region" in df.columns:
+
+    plt.figure(figsize=(7, 7))
+
+    region_sales.plot(
+        kind="pie",
+        autopct="%1.1f%%",
+        startangle=90
+    )
+
+    plt.title("Sales Distribution by Region")
+
+    plt.ylabel("")
+
+    plt.show()
+
+# ============================================================
+# 12. IDENTIFY TOP-PERFORMING REGION
+# ============================================================
+
+if "region" in df.columns:
+
+    top_region = region_sales.idxmax()
+
+    highest_sales = region_sales.max()
+
+    print("\nTOP PERFORMING REGION:")
+
+    print("Region:", top_region)
+
+    print("Total Sales:", highest_sales)
+
+# ============================================================
+# 13. GROUP SALES BY PRODUCT CATEGORY
+# ============================================================
+
+if "product_category" in df.columns:
+
+    category_sales = df.groupby(
+        "product_category"
+    )["total_amount"].sum()
+
+    print("\nSALES BY PRODUCT CATEGORY:")
+
+    print(category_sales)
+
+# ============================================================
+# 14. GROUP SALES BY REGION AND CATEGORY
+# ============================================================
+
+if "region" in df.columns and "product_category" in df.columns:
+
+    region_category_sales = df.pivot_table(
+        values="total_amount",
+        index="region",
+        columns="product_category",
+        aggfunc="sum",
+        fill_value=0
+    )
+
+    print("\nSALES BY REGION AND PRODUCT CATEGORY:")
+
+    print(region_category_sales)
+
+else:
+
+    print("\nRegion-wise category aggregation is unavailable.")
+
+# ============================================================
+# 15. STACKED BAR PLOT
+# ============================================================
+
+if "region" in df.columns and "product_category" in df.columns:
+
+    region_category_sales.plot(
+        kind="bar",
+        stacked=True,
+        figsize=(10, 6)
+    )
+
+    plt.title("Sales by Region and Product Category")
+
+    plt.xlabel("Region")
+
+    plt.ylabel("Total Sales Amount")
+
+    plt.legend(title="Product Category")
+
+    plt.xticks(rotation=45)
+
+    plt.tight_layout()
+
+    plt.show()
+
+# ============================================================
+# 16. BAR PLOT - SALES BY PRODUCT CATEGORY
+# ============================================================
+
+if "product_category" in df.columns:
+
+    plt.figure(figsize=(9, 5))
+
+    category_sales.plot(kind="bar")
+
+    plt.title("Sales by Product Category")
+
+    plt.xlabel("Product Category")
+
+    plt.ylabel("Total Sales Amount")
+
+    plt.xticks(rotation=0)
+
+    plt.tight_layout()
+
+    plt.show()
+
+# ============================================================
+# 17. GROUPED BAR PLOT
+# ============================================================
+
+if "region" in df.columns and "product_category" in df.columns:
+
+    region_category_sales.plot(
+        kind="bar",
+        stacked=False,
+        figsize=(10, 6)
+    )
+
+    plt.title("Grouped Sales Comparison")
+
+    plt.xlabel("Region")
+
+    plt.ylabel("Total Sales Amount")
+
+    plt.legend(title="Product Category")
+
+    plt.xticks(rotation=45)
+
+    plt.tight_layout()
+
+    plt.show()
+
+# ============================================================
+# 18. SALES AGGREGATION BY DATE
+# ============================================================
+
+if "date" in df.columns:
+
+    daily_sales = df.groupby("date")[
+        "total_amount"
+    ].sum()
+
+    print("\nDAILY SALES SUMMARY:")
+
+    print(daily_sales.head())
+
+    plt.figure(figsize=(12, 5))
+
+    plt.plot(
+        daily_sales.index,
+        daily_sales.values,
+        marker="o"
+    )
+
+    plt.title("Daily Sales Trend")
+
+    plt.xlabel("Date")
+
+    plt.ylabel("Total Sales")
+
+    plt.xticks(rotation=45)
+
+    plt.grid(True)
+
+    plt.tight_layout()
+
+    plt.show()
+
+# ============================================================
+# 19. DESCRIPTIVE SALES STATISTICS
+# ============================================================
+
+print("\nSALES STATISTICS")
+
+print("Total Sales:",
+      df["total_amount"].sum())
+
+print("Average Sales:",
+      round(df["total_amount"].mean(), 2))
+
+print("Maximum Sales:",
+      df["total_amount"].max())
+
+print("Minimum Sales:",
+      df["total_amount"].min())
+
+if "quantity" in df.columns:
+
+    print("Total Quantity Sold:",
+          df["quantity"].sum())
+
+# ============================================================
+# 20. EXPORT CLEANED DATASET
+# ============================================================
+
+df.to_csv(
+    "Cleaned_Retail_Sales_Data.csv",
+    index=False
+)
+
+print("\nCleaned Dataset Saved Successfully!")
+
+# ============================================================
+# 21. FINAL OUTPUT
+# ============================================================
+
+print("\n==========================================")
+
+print("RETAIL SALES DATA AGGREGATION COMPLETED")
+
+print("==========================================")
+
+print("Total Records:", len(df))
+
+print("Total Sales:", df["total_amount"].sum())
+
+if "region" in df.columns:
+
+    print("\nTop Performing Region:", region_sales.idxmax())
+
+if "product_category" in df.columns:
+
+    print("\nSales by Product Category:")
+
+    print(category_sales)
+
+print("\nAll Tasks Completed Successfully!")
+
+## Data Aggregation is the process of collecting and summarizing data to obtain meaningful information.
+
+Step 1: Import Required Libraries
+Four Python libraries are used:
+- Pandas: Used for loading, cleaning, grouping, and aggregating data.
+- NumPy: Used for numerical operations.
+- Matplotlib: Used to create graphs and charts.
+- Seaborn: Used for statistical data visualization.
+Step 2: Load the Dataset
+- The retail sales dataset is loaded from a CSV file.
+- The dataset is stored in a DataFrame named df.
+- The first five records are displayed.
+
+Step 3: Explore the Dataset
+In this step, we understand the structure and quality of the dataset.
+- Shape: Displays the total number of rows and columns.
+- Info: Displays column names and data types.
+- Describe: Displays statistical information such as mean, minimum, and maximum.
+- Columns: Displays all column names.
+- Isnull: Identifies missing values.
+- Duplicated: Counts duplicate records.
+
+Step 4: Clean Column Names
+- Removes unnecessary spaces from column names.
+- Converts column names into lowercase.
+- Replaces spaces with underscores.
+Example:
+- Before: Product Category
+- After: product_category
+
+Step 5: Data Cleaning
+Data cleaning improves the quality of the dataset.
+
+Three operations are performed:
+
+1. Remove Duplicate Records
+- Removes repeated rows from the dataset.
+2. Handle Missing Numerical Values
+- Identifies numerical columns.
+- Replaces missing values using the median.
+3. Handle Missing Categorical Values
+- Identifies text-based columns.
+- Replaces missing values using the mode.
+
+Important terms:
+- Median: Middle value of sorted data.
+- Mode: Most frequently occurring value.
+Step 6: Identify Relevant Variables
+The important variables used in this practical are:
+Variable	Meaning
+Date	Transaction date
+Product Category	Category of product
+Quantity	Number of products sold
+Total Amount	Total sales amount
+Region	Sales region
+
+Step 7: Convert Date Column
+- The date column is converted into datetime format.
+- Invalid date values are converted into missing values.
+
+Step 8: Calculate Total Sales
+- The program checks whether the total amount column is available.
+- If it is not available, total sales are calculated using price per unit and quantity.
+- If a total sales column is available, it is used as the sales amount.
+
+Formula:Total Amount = Price per Unit × Quantity
+
+Step 9: Group Sales by Region
+- Sales records are grouped according to region.
+- Total sales are calculated for each region using the sum operation.
+- Regions are arranged in descending order of sales.
+GroupBy: It groups records based on a particular column.
+
+Sum: Calculates the total of numerical values.
+
+Step 10: Bar Plot – Sales by Region
+- A bar chart is created to display total sales by region.
+- Each bar represents one region.
+- The height of each bar represents the total sales amount.
+
+Step 11: Pie Chart – Sales Distribution by Region
+- A pie chart is created to show the percentage contribution of each region.
+- Each slice represents one region.
+- The percentage of sales is displayed on each slice.
+
+Step 12: Identify Top-Performing Region
+- The region with the highest total sales is identified.
+- The maximum sales value is calculated.
+- The region name and its total sales are displayed.
+Important functions:
+- idxmax() – Returns the index or name associated with the maximum value.
+- max() – Returns the maximum value.
+
+Step 13: Group Sales by Product Category
+- Sales records are grouped according to product category.
+- Total sales are calculated for each category.
+- The category-wise sales summary is displayed.
+
+Step 14: Group Sales by Region and Category
+- A pivot table is created.
+- Region is used as the row index.
+- Product category is used as the column.
+- Total sales amount is calculated for each combination.
+- Missing combinations are filled with zero.
+Pivot Table: A pivot table summarizes data by arranging it into rows and columns.
+
+Step 15: Stacked Bar Plot
+- A stacked bar chart is created using the pivot table.
+- Each bar represents a region.
+- Different sections represent product categories.
+- The total height represents the combined sales of all categories in that region.
+
+Step 16: Bar Plot – Sales by Product Category
+- A bar chart is created for product categories.
+- Each bar represents one product category.
+- The height represents the total sales of that category.
+
+Step 17: Grouped Bar Plot
+- A grouped bar chart is created to compare sales across regions and product categories.
+- Bars are displayed side by side instead of being stacked.
+- Different colors represent different product categories.
+Purpose: To compare individual category sales across different regions.
+
+Difference between Stacked and Grouped Bar Plot:
+- Stacked Bar Plot displays categories on top of each other.
+- Grouped Bar Plot displays categories side by side.
+
+Step 18: Sales Aggregation by Date
+- Sales records are grouped according to transaction date.
+- Total sales are calculated for each date.
+- A line plot is created to display daily sales trends.
+
+Step 19: Descriptive Sales Statistics
+In this step, important sales statistics are calculated.
+- Total Sales: Sum of all sales amounts.
+- Average Sales: Average value of sales transactions.
+- Maximum Sales: Highest sales transaction value.
+- Minimum Sales: Lowest sales transaction value.
+- Total Quantity Sold: Total number of products sold.
+
+Step 20: Export Cleaned Dataset
+- The cleaned retail sales dataset is saved as a CSV file.
+- The output file is named Cleaned_Retail_Sales_Data.csv.
+- It can be used for future analysis.
+
+Q21. Why do we use a bar plot?
+To compare sales between different regions or product categories.
+
+Q22. What is a pie chart?
+A pie chart represents data as slices of a circle and shows the percentage distribution.
+
+Q23. What is a stacked bar plot?
+It displays multiple categories stacked on top of each other for comparison.
+
+Q24. What is a grouped bar plot?
+It displays bars side by side to compare different product categories across regions.
+
+Q25. What is a line plot?
+A line plot shows changes or trends in data over time.
+
+Q26. Why is a daily sales trend calculated?
+To understand how sales change from one date to another.

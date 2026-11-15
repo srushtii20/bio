@@ -1,0 +1,311 @@
+# PRACTICAL: CLASSIFICATION ANALYSIS
+# Handwritten Digit Classification using SVM
+
+# STEP 1: Import Libraries
+
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.datasets import load_digits
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+
+# STEP 2: Load Dataset
+
+digits = load_digits()
+
+X = digits.data
+y = digits.target
+
+print("Dataset Loaded Successfully!")
+
+print("\nData Shape:", X.shape)
+print("Target Shape:", y.shape)
+
+print("\nFirst 10 Labels:")
+print(y[:10])
+
+
+# STEP 3: Display Handwritten Digit Images
+
+fig, axes = plt.subplots(2, 5, figsize=(10, 5))
+
+for i, ax in enumerate(axes.flat):
+
+    ax.imshow(digits.images[i], cmap="gray")
+    ax.set_title("Digit: " + str(y[i]))
+    ax.axis("off")
+
+plt.suptitle("Handwritten Digit Images")
+plt.show()
+
+
+# STEP 4: Split Dataset
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y,
+    test_size=0.2,
+    random_state=42,
+    stratify=y
+)
+
+print("\nTraining Data:", X_train.shape)
+print("Testing Data:", X_test.shape)
+
+
+# STEP 5: Feature Scaling
+
+scaler = StandardScaler()
+
+X_train = scaler.fit_transform(X_train)
+
+X_test = scaler.transform(X_test)
+
+print("\nFeature Scaling Completed!")
+
+
+# STEP 6: Apply SVM Algorithm
+
+model = SVC(kernel="rbf", C=10, gamma="scale")
+
+model.fit(X_train, y_train)
+
+print("\nSVM Model Trained Successfully!")
+
+
+# STEP 7: Predict Handwritten Digits
+
+y_pred = model.predict(X_test)
+
+print("\nPredicted Values:")
+print(y_pred[:20])
+
+print("\nActual Values:")
+print(y_test[:20])
+
+
+# STEP 8: Calculate Accuracy
+
+accuracy = accuracy_score(y_test, y_pred)
+
+print("\nModel Accuracy:", round(accuracy * 100, 2), "%")
+
+
+# STEP 9: Confusion Matrix
+
+cm = confusion_matrix(y_test, y_pred)
+
+plt.figure(figsize=(9, 7))
+
+sns.heatmap(
+    cm,
+    annot=True,
+    fmt="d",
+    cmap="Blues"
+)
+
+plt.title("SVM Confusion Matrix")
+plt.xlabel("Predicted Digit")
+plt.ylabel("Actual Digit")
+plt.show()
+
+
+# STEP 10: Classification Report
+
+print("\nClassification Report:")
+
+print(classification_report(y_test, y_pred))
+
+
+# STEP 11: Display Actual and Predicted Images
+
+fig, axes = plt.subplots(2, 5, figsize=(12, 5))
+
+for i, ax in enumerate(axes.flat):
+
+    ax.imshow(
+        X_test[i].reshape(8, 8),
+        cmap="gray"
+    )
+
+    ax.set_title(
+        "Actual: " + str(y_test[i]) +
+        "\nPredicted: " + str(y_pred[i])
+    )
+
+    ax.axis("off")
+
+plt.suptitle("Actual vs Predicted Digits")
+plt.tight_layout()
+plt.show()
+
+
+# STEP 12: Final Result
+
+print("\n========== FINAL RESULT ==========")
+
+print("Algorithm: Support Vector Machine")
+
+print("Number of Classes: 10 (0 to 9)")
+
+print("Accuracy:", round(accuracy * 100, 2), "%")
+
+print("\nHANDWRITTEN DIGIT CLASSIFICATION COMPLETED!")
+
+## Classification is a supervised machine learning technique used to predict categories or classes from input data.
+
+STEP 1: Import Libraries
+- NumPy: Used for numerical calculations and array operations.
+- Matplotlib: Used to display handwritten digit images.
+- Seaborn: Used to create attractive graphs and heatmaps.
+- load_digits: Loads the handwritten digits dataset.
+- train_test_split: Divides data into training and testing sets.
+- StandardScaler: Standardizes the input features.
+- SVC: Implements Support Vector Machine classification.
+- accuracy_score: Calculates model accuracy.
+- confusion_matrix: Shows correct and incorrect predictions.
+- classification_report: Displays precision, recall and F1-score.
+
+STEP 2: Load Dataset
+- Loads the handwritten digits dataset from Scikit-learn.
+- The dataset contains images of handwritten digits from 0 to 9.
+- Each image has a size of 8 × 8 pixels.
+- Each image contains 64 pixel values.
+- X represents input features (pixel values).
+- y represents target labels (actual digits).
+- Displays the shape of input data and target data.
+- Displays the first 10 digit labels.
+
+STEP 3: Display Handwritten Digit Images
+- Displays the first 10 handwritten digit images.
+- Uses a 2 × 5 grid to arrange the images.
+- Each image is displayed in grayscale.
+- Displays the actual digit as the image title.
+- Removes axis values for better visualization.
+
+STEP 4: Split Dataset
+- Divides the dataset into training and testing data.
+- 80% data is used for training.
+- 20% data is used for testing.
+- Training data helps the model learn patterns.
+- Testing data evaluates the model's performance.
+- random_state=42 ensures reproducible splitting.
+- stratify=y maintains the proportion of each digit class in both sets.
+
+STEP 5: Feature Scaling
+- Feature scaling converts input features into a common scale.
+- StandardScaler is used for standardization.
+- It converts features to approximately zero mean and unit standard deviation.
+- It prevents features with larger values from dominating the model.
+
+STEP 6: Apply SVM Algorithm
+SVM stands for Support Vector Machine.
+- SVM is a supervised machine learning algorithm.
+- It is used for classification and regression.
+- It finds the best decision boundary to separate different classes.
+- It uses support vectors to create the decision boundary.
+- In this practical, SVM classifies handwritten digits from 0 to 9.
+Important parameters:
+1. Kernel: Defines the type of decision boundary.
+2. RBF Kernel: Helps classify data that cannot be separated using a straight line.
+3. C: Controls the balance between classification errors and margin size.
+4. Gamma: Controls the influence of individual training points.
+
+STEP 7: Predict Handwritten Digits
+- Uses the trained SVM model to predict digit classes.
+- Predicts digits from the testing dataset.
+- Displays the first 20 predicted values.
+- Displays the corresponding actual values.
+- Helps compare actual and predicted digits.
+
+STEP 8: Calculate Accuracy
+- Accuracy measures the percentage of correct predictions.
+- It compares actual values with predicted values.
+- Higher accuracy indicates better classification performance.
+Formula:
+Accuracy = (Correct Predictions / Total Predictions) × 100
+
+STEP 9: Confusion Matrix
+- A confusion matrix is used to evaluate classification performance.
+- It compares actual classes with predicted classes.
+- Rows represent actual digits.
+- Columns represent predicted digits.
+- Diagonal values represent correctly classified digits.
+- Other values represent incorrect classifications.
+
+STEP 10: Classification Report
+The classification report contains three important evaluation metrics.
+
+1. Precision
+- Measures how many predicted positive results are actually correct.
+- Higher precision indicates fewer false positive predictions.
+2. Recall
+- Measures how many actual positive results are correctly identified.
+- Higher recall indicates fewer missed positive results.
+3. F1-Score
+- It is the harmonic mean of precision and recall.
+- It provides a balance between precision and recall.
+4. Support
+- Represents the total number of actual samples belonging to each class.
+
+STEP 11: Display Actual and Predicted Images
+- Displays handwritten digit images from the testing dataset.
+- Shows actual digit values.
+- Shows predicted digit values.
+- Uses grayscale images for visualization.
+- Helps identify correct and incorrect predictions.
+
+STEP 12: Final Result
+- Displays the name of the algorithm used.
+- Displays the total number of classes.
+- Shows the final classification accuracy.
+- Confirms successful completion of handwritten digit classification.
+
+Q1. What is SVM?
+SVM stands for Support Vector Machine. It is a supervised machine learning algorithm used for classification and regression.
+
+Q2. What is supervised learning?
+Supervised learning is a type of machine learning in which the model learns from labelled data.
+
+Q3. Which dataset is used in this practical?
+The Scikit-learn handwritten digits dataset, which contains images of handwritten digits from 0 to 9.
+
+Q4. How many classes are present in this dataset?
+There are 10 classes, representing digits from 0 to 9.
+
+Q5. What is a feature in this practical?
+Each pixel value of the 8 × 8 image is a feature. Therefore, each image has 64 features.
+
+Q6. What is the use of SVC()?
+SVC() creates a Support Vector Classifier model.
+
+Q7. What is a kernel in SVM?
+A kernel helps SVM handle data that cannot be separated easily using a straight line.
+
+Q8. What is the RBF kernel?
+RBF stands for Radial Basis Function. It helps SVM classify complex, non-linear data.
+
+Q9. What is accuracy?
+Accuracy measures the percentage of correctly predicted values.
+Formula:Accuracy = (Correct Predictions / Total Predictions) × 100
+
+Q10. What is a confusion matrix?
+A confusion matrix is a table that compares actual and predicted classes to show correct and incorrect predictions.
+
+Q11. What is a classification report?
+It provides evaluation metrics such as precision, recall, F1-score, and support.
+
+Q12. What is precision?
+Precision tells us how many predicted positive results are actually correct.
+
+Q13. What is recall?
+Recall tells us how many actual positive cases are correctly identified.
+
+Q14. What is F1-score?
+F1-score is the harmonic mean of precision and recall.
+
+Q15. What is support?
+Support represents the number of actual samples belonging to each class.

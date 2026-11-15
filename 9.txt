@@ -1,0 +1,712 @@
+# ============================================================
+# PRACTICAL: DATA CLEANING AND PREPARATION
+# CUSTOMER CHURN ANALYSIS
+# ============================================================
+
+# 1. IMPORT REQUIRED LIBRARIES
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+
+import warnings
+warnings.filterwarnings("ignore")
+
+
+# ============================================================
+# 2. LOAD THE DATASET
+# ============================================================
+
+# Load the dataset
+
+df = pd.read_csv(
+    r"C:\Users\HP\Downloads\Telco-Customer-Churn.csv"
+)
+
+print("Dataset Loaded Successfully!")
+
+print("\nFirst Five Records:")
+print(df.head())
+
+
+# ============================================================
+# 3. EXPLORE DATASET STRUCTURE AND CONTENT
+# ============================================================
+
+print("\nDataset Shape:")
+print(df.shape)
+
+print("\nDataset Information:")
+df.info()
+
+print("\nStatistical Summary:")
+print(df.describe(include="all"))
+
+print("\nColumn Names:")
+print(df.columns.tolist())
+
+print("\nMissing Values:")
+print(df.isnull().sum())
+
+print("\nDuplicate Records:")
+print(df.duplicated().sum())
+
+
+# ============================================================
+# 4. HANDLE MISSING VALUES
+# ============================================================
+
+# Remove extra spaces from column names
+
+df.columns = df.columns.str.strip()
+
+# Convert TotalCharges to numeric if the column exists
+
+if "TotalCharges" in df.columns:
+    df["TotalCharges"] = pd.to_numeric(
+        df["TotalCharges"], errors="coerce"
+    )
+
+# Identify numeric and categorical columns
+
+numeric_cols = df.select_dtypes(
+    include=np.number
+).columns.tolist()
+
+categorical_cols = df.select_dtypes(
+    include="object"
+).columns.tolist()
+
+# Fill missing numeric values with median
+
+for col in numeric_cols:
+    df[col] = df[col].fillna(df[col].median())
+
+# Fill missing categorical values with mode
+
+for col in categorical_cols:
+    if df[col].isnull().sum() > 0:
+        df[col] = df[col].fillna(
+            df[col].mode()[0]
+        )
+
+print("\nMissing Values After Cleaning:")
+print(df.isnull().sum())
+
+
+# ============================================================
+# 5. REMOVE DUPLICATE RECORDS
+# ============================================================
+
+df.drop_duplicates(inplace=True)
+
+print("\nDuplicate Records Removed!")
+
+print("Dataset Shape After Removing Duplicates:")
+print(df.shape)
+
+
+# ============================================================
+# 6. HANDLE INCONSISTENT DATA
+# ============================================================
+
+# Remove leading and trailing spaces from text columns
+
+for col in df.select_dtypes(include="object").columns:
+
+    df[col] = df[col].str.strip()
+
+# Standardize text formatting
+
+for col in df.select_dtypes(include="object").columns:
+
+    df[col] = df[col].replace({
+        "yes": "Yes",
+        "no": "No",
+        "YES": "Yes",
+        "NO": "No",
+        "male": "Male",
+        "female": "Female"
+    })
+
+print("\nInconsistent Data Standardized!")
+
+
+# ============================================================
+# 7. CONVERT COLUMNS INTO CORRECT DATA TYPES
+# ============================================================
+
+# Convert numerical columns
+
+for col in ["tenure", "SeniorCitizen",
+            "MonthlyCharges", "TotalCharges"]:
+
+    if col in df.columns:
+
+        df[col] = pd.to_numeric(
+            df[col], errors="coerce"
+        )
+
+# Fill any new missing numeric values
+
+for col in df.select_dtypes(include=np.number).columns:
+
+    df[col] = df[col].fillna(df[col].median())
+
+print("\nData Types After Conversion:")
+print(df.dtypes)
+
+
+# ============================================================
+# 8. IDENTIFY AND HANDLE OUTLIERS
+# ============================================================
+
+numeric_cols = df.select_dtypes(
+    include=np.number
+).columns.tolist()
+
+# Exclude binary columns from outlier treatment
+
+numeric_cols = [
+    col for col in numeric_cols
+    if df[col].nunique() > 2
+]
+
+print("\nOutliers Before Treatment:")
+
+for col in numeric_cols:
+
+    Q1 = df[col].quantile(0.25)
+
+    Q3 = df[col].quantile(0.75)
+
+    IQR = Q3 - Q1
+
+    lower = Q1 - 1.5 * IQR
+
+    upper = Q3 + 1.5 * IQR
+
+    outliers = (
+        (df[col] < lower) |
+        (df[col] > upper)
+    ).sum()
+
+    print(col, ":", outliers)
+
+    # Handle outliers using capping
+
+    df[col] = df[col].clip(
+        lower=lower,
+        upper=upper
+    )
+
+print("\nOutliers Handled Successfully!")
+
+
+# ============================================================
+# 9. FEATURE ENGINEERING
+# ============================================================
+
+# Create tenure groups
+
+if "tenure" in df.columns:
+
+    df["Tenure_Group"] = pd.cut(
+        df["tenure"],
+        bins=[-1, 12, 24, 48, np.inf],
+        labels=[
+            "New Customer",
+            "Regular Customer",
+            "Loyal Customer",
+            "Long Term Customer"
+        ]
+    )
+
+# Create average monthly spending
+
+if "TotalCharges" in df.columns and "tenure" in df.columns:
+
+    df["Average_Monthly_Spending"] = (
+        df["TotalCharges"] /
+        df["tenure"].replace(0, np.nan)
+    )
+
+    df["Average_Monthly_Spending"] = (
+        df["Average_Monthly_Spending"].fillna(0)
+    )
+
+# Create high monthly charge indicator
+
+if "MonthlyCharges" in df.columns:
+
+    df["High_Monthly_Charges"] = (
+        df["MonthlyCharges"] >
+        df["MonthlyCharges"].median()
+    ).astype(int)
+
+print("\nNew Features Created Successfully!")
+
+print("\nUpdated Dataset:")
+print(df.head())
+
+
+# ============================================================
+# 10. NORMALIZATION AND SCALING
+# ============================================================
+
+# Identify target column
+
+target = "Churn"
+
+if target not in df.columns:
+    raise ValueError(
+        "Target column 'Churn' not found in dataset."
+    )
+
+# Convert target into binary format
+
+df[target] = df[target].astype(str).str.strip().map({
+    "Yes": 1,
+    "No": 0
+})
+
+if df[target].isnull().any():
+    raise ValueError(
+        "Churn contains unexpected values. Check target labels."
+    )
+
+# Separate features and target
+
+X = df.drop(columns=[target])
+
+y = df[target]
+
+# Remove customer ID because it is not useful for prediction
+
+id_columns = [
+    col for col in X.columns
+    if col.lower() in ["customerid", "customer_id", "id"]
+]
+
+X = X.drop(columns=id_columns)
+
+# Convert categorical columns into numerical format
+
+X = pd.get_dummies(
+    X,
+    drop_first=True,
+    dtype=int
+)
+
+# Replace infinite values
+
+X.replace(
+    [np.inf, -np.inf],
+    np.nan,
+    inplace=True
+)
+
+X = X.fillna(0)
+
+print("\nEncoded Dataset:")
+print(X.head())
+
+
+# ============================================================
+# 11. SPLIT DATA INTO TRAINING AND TESTING SETS
+# ============================================================
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.20,
+    random_state=42,
+    stratify=y
+)
+
+print("\nTraining and Testing Data Split Successfully!")
+
+print("Training Data Shape:", X_train.shape)
+
+print("Testing Data Shape:", X_test.shape)
+
+
+# ============================================================
+# 12. APPLY STANDARD SCALING
+# ============================================================
+
+scaler = StandardScaler()
+
+# Fit scaler only on training data
+
+X_train_scaled = scaler.fit_transform(X_train)
+
+# Transform testing data
+
+X_test_scaled = scaler.transform(X_test)
+
+print("\nData Scaling Completed!")
+
+print("Scaled Training Data Shape:",
+      X_train_scaled.shape)
+
+print("Scaled Testing Data Shape:",
+      X_test_scaled.shape)
+
+
+# ============================================================
+# 13. VISUALIZE CUSTOMER CHURN
+# ============================================================
+
+plt.figure(figsize=(7, 5))
+
+sns.countplot(
+    x="Churn",
+    data=df,
+    hue="Churn",
+    legend=False
+)
+
+plt.title("Customer Churn Distribution")
+
+plt.xlabel("Churn (0 = No, 1 = Yes)")
+
+plt.ylabel("Number of Customers")
+
+plt.show()
+
+
+# ============================================================
+# 14. VISUALIZE NUMERICAL DATA DISTRIBUTION
+# ============================================================
+
+plot_columns = [
+    col for col in
+    ["tenure", "MonthlyCharges", "TotalCharges"]
+    if col in df.columns
+]
+
+df[plot_columns].hist(
+    figsize=(10, 6),
+    bins=20
+)
+
+plt.suptitle("Distribution of Customer Data")
+
+plt.tight_layout()
+
+plt.show()
+
+
+# ============================================================
+# 15. CORRELATION HEATMAP
+# ============================================================
+
+correlation_df = df.select_dtypes(
+    include=np.number
+)
+
+plt.figure(figsize=(10, 6))
+
+sns.heatmap(
+    correlation_df.corr(),
+    annot=True,
+    cmap="coolwarm",
+    fmt=".2f"
+)
+
+plt.title("Customer Churn Correlation Heatmap")
+
+plt.tight_layout()
+
+plt.show()
+
+
+# ============================================================
+# 16. EXPORT CLEANED DATASET
+# ============================================================
+
+# Save cleaned dataset
+
+df.to_csv(
+    "Cleaned_Telecom_Customer_Churn.csv",
+    index=False
+)
+
+# Save training and testing datasets
+
+X_train.to_csv(
+    "X_train.csv",
+    index=False
+)
+
+X_test.to_csv(
+    "X_test.csv",
+    index=False
+)
+
+y_train.to_csv(
+    "y_train.csv",
+    index=False
+)
+
+y_test.to_csv(
+    "y_test.csv",
+    index=False
+)
+
+# Save scaled datasets
+
+pd.DataFrame(
+    X_train_scaled,
+    columns=X_train.columns
+).to_csv("X_train_scaled.csv", index=False)
+
+pd.DataFrame(
+    X_test_scaled,
+    columns=X_test.columns
+).to_csv("X_test_scaled.csv", index=False)
+
+
+print("\nAll Cleaned Datasets Exported Successfully!")
+
+
+# ============================================================
+# 17. FINAL OUTPUT
+# ============================================================
+
+print("\n==========================================")
+
+print("CUSTOMER CHURN DATA CLEANING COMPLETED")
+
+print("==========================================")
+
+print("\nTotal Records:", len(df))
+
+print("Total Features:", X.shape[1])
+
+print("Training Records:", len(X_train))
+
+print("Testing Records:", len(X_test))
+
+print("\nCustomer Churn Distribution:")
+
+print(df["Churn"].value_counts())
+
+print("\nMissing Values:")
+print(df.isnull().sum().sum())
+
+print("\nDuplicate Records:")
+print(df.duplicated().sum())
+
+print("\nAll Tasks Completed Successfully!")
+
+## STEP 1: Import Required Libraries
+- Pandas: Used to load, manipulate and analyze datasets.
+- NumPy: Used for numerical calculations.
+- Matplotlib: Used to create graphs.
+- Seaborn: Used for statistical data visualization.
+- Train-Test Split: Used to divide data into training and testing sets.
+- StandardScaler: Used to standardize numerical features.
+- Warnings: Used to control warning messages.
+
+STEP 2: Load the Dataset
+- Loads the Telecom Customer Churn dataset from a CSV file.
+- Displays the first five records.
+- Helps us understand the dataset structure.
+- The dataset contains customer information such as tenure, monthly charges, total charges and churn status.
+
+STEP 3: Explore Dataset Structure and Content
+In this step, we examine the dataset.
+
+Important operations:
+1. Shape: Displays the number of rows and columns.
+2. Info: Displays column names, data types and non-null values.
+3. Describe: Displays statistical information.
+4. Columns: Displays all column names.
+5. Missing Values: Identifies empty values in each column.
+6. Duplicate Records: Counts repeated records.
+
+STEP 4: Handle Missing Values
+Missing values are empty or unavailable entries in a dataset.
+
+Important operations:
+1. Clean Column Names
+- Removes extra spaces from column names.
+2. Convert TotalCharges
+- Converts the TotalCharges column into numerical format.
+- Invalid values are converted into missing values.
+3. Identify Column Types
+- Separates numerical columns and categorical columns.
+4. Fill Numerical Missing Values
+- Replaces missing numerical values with the median.
+- Median is less affected by extreme values.
+5. Fill Categorical Missing Values
+- Replaces missing categorical values with the mode.
+- Mode represents the most frequently occurring value.
+
+STEP 5: Remove Duplicate Records
+- Identifies repeated records in the dataset.
+- Removes duplicate rows.
+- Updates the dataset after removing duplicates.
+- Displays the new dataset shape.
+
+STEP 6: Handle Inconsistent Data
+Inconsistent data means values are represented in different formats.
+
+Important operations:
+1. Removes leading and trailing spaces from text columns.
+2. Standardizes Yes and No values.
+3. Converts male and female values into a consistent format.
+4. Maintains uniform text formatting.
+Example:
+- yes → Yes
+- YES → Yes
+- no → No
+- male → Male
+- female → Female
+
+STEP 7: Convert Columns into Correct Data Types
+- Converts tenure into numerical format.
+- Converts SeniorCitizen into numerical format.
+- Converts MonthlyCharges into numerical format.
+- Converts TotalCharges into numerical format.
+- Handles invalid numerical values.
+- Fills newly created missing values using the median.
+
+STEP 8: Identify and Handle Outliers
+Outliers are unusually high or low values in a dataset.
+- Identifies numerical columns.
+- Excludes binary columns from outlier treatment.
+- Uses the IQR method to detect outliers.
+- Calculates Q1 and Q3.
+- Calculates the Interquartile Range.
+- Uses the lower and upper limits to identify extreme values.
+- Handles outliers using capping.
+Important Terms:
+- Q1: First Quartile.
+- Q3: Third Quartile.
+- IQR: Interquartile Range.
+
+Formula:IQR = Q3 − Q1
+Lower Limit = Q1 − 1.5 × IQR
+Upper Limit = Q3 + 1.5 × IQR
+
+What is Capping?
+Capping means replacing values outside the accepted range with the lower or upper limit instead of deleting the records.
+
+STEP 9: Feature Engineering
+Feature Engineering is the process of creating new useful features from existing data.
+
+In this practical, three new features are created.
+
+1. Tenure Group
+- Groups customers according to their subscription duration.
+- New Customer: 0–12 months.
+- Regular Customer: 12–24 months.
+- Loyal Customer: 24–48 months.
+- Long Term Customer: More than 48 months.
+2. Average Monthly Spending
+- Calculates the average monthly spending of each customer.
+- Uses TotalCharges and tenure.
+- Helps understand customer spending behaviour.
+Formula:
+
+Average Monthly Spending = Total Charges / Tenure
+
+3. High Monthly Charges
+- Compares monthly charges with the median monthly charges.
+- If charges are greater than the median, the value is 1.
+- Otherwise, the value is 0.
+
+STEP 10: Normalization and Scaling
+In this step, the target variable and input features are prepared for machine learning.
+
+1. Identify Target Column
+- Churn is selected as the target variable.
+- Yes is converted into 1.
+- No is converted into 0.
+2. Separate Features and Target
+- X represents input features.
+- y represents the target variable.
+3. Remove Customer ID
+- Removes customer ID because it is only an identification number.
+- It is not useful for predicting customer churn.
+4. Convert Categorical Data into Numerical Format
+- Uses One-Hot Encoding.
+- Converts categorical values into numerical columns.
+- Makes categorical data suitable for machine learning algorithms.
+5. Handle Missing and Infinite Values
+- Replaces infinite values with missing values.
+- Fills remaining missing values with zero.
+
+STEP 11: Split Data into Training and Testing Sets
+- Divides the dataset into training and testing data.
+- 80% data is used for training.
+- 20% data is used for testing.
+- Training data helps machine learning models learn patterns.
+- Testing data evaluates model performance.
+- Stratify maintains the proportion of churn classes in both sets.
+
+STEP 12: Apply Standard Scaling
+- Standard scaling converts numerical features into a common scale.
+- StandardScaler is used for this process.
+- It converts features to approximately zero mean and unit standard deviation.
+- The scaler learns from training data.
+- The same scaling parameters are applied to testing data.
+
+STEP 13: Visualize Customer Churn
+- Creates a count plot.
+- Displays the number of customers who stayed and left.
+- Churn 0 represents customers who did not leave.
+- Churn 1 represents customers who left.
+- Helps understand customer churn distribution.
+
+STEP 14: Visualize Numerical Data Distribution
+- Creates histograms for numerical columns.
+- Displays tenure, monthly charges and total charges.
+- Shows how numerical values are distributed.
+- Helps understand the patterns in customer data.
+
+STEP 15: Correlation Heatmap
+- Calculates correlation between numerical features.
+- Creates a correlation matrix.
+- Displays the relationship between different numerical columns.
+- Uses different colours to represent correlation values.
+
+STEP 16: Export Cleaned Dataset
+- Saves the cleaned dataset in CSV format.
+- Saves training and testing datasets separately.
+- Saves target training and testing values.
+- Saves scaled training and testing datasets.
+- Makes the processed data available for future machine learning tasks.
+
+Q1. What is Customer Churn?
+Ans: Customer churn means customers stop using a company's products or services.
+
+Q2. What is Feature Engineering?
+Ans: Feature engineering is the process of creating new useful columns from existing data to improve analysis and prediction.
+
+What is Normalization?
+Ans: Normalization is the process of bringing numerical values into a common range.
+
+Q25. What is Standardization?
+Ans: Standardization is the process of transforming numerical data so that it has approximately zero mean and unit standard deviation.
+
+Q26. What is StandardScaler?
+Ans: StandardScaler is a Scikit-learn tool used to standardize numerical data.
+
+Q27. What is the difference between training and testing data?
+Ans:
+- Training data is used to train the machine learning model.
+- Testing data is used to evaluate the model's performance.
+
+Q28. What is train_test_split()?
+Ans: It divides the dataset into training and testing datasets.
+
+Q29. What is the meaning of test_size=0.20?
+Ans: It means 20% of the data is used for testing and 80% is used for training.

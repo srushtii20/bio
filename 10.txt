@@ -1,0 +1,526 @@
+# ============================================================
+# PRACTICAL: DATA WRANGLING
+# DATA WRANGLING ON REAL ESTATE MARKET
+# ============================================================
+
+# 1. IMPORT REQUIRED LIBRARIES
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import re
+
+# ============================================================
+# 2. LOAD THE DATASET
+# ============================================================
+
+df = pd.read_csv(r"C:\Users\HP\Downloads\house_data.csv")
+
+print("Dataset Loaded Successfully!")
+
+print("\nFirst Five Records:")
+print(df.head())
+
+# ============================================================
+# 3. EXPLORE DATASET
+# ============================================================
+
+print("\nDataset Shape:")
+print(df.shape)
+
+print("\nDataset Information:")
+df.info()
+
+print("\nStatistical Summary:")
+print(df.describe(include="all"))
+
+print("\nMissing Values:")
+print(df.isnull().sum())
+
+print("\nDuplicate Records:")
+print(df.duplicated().sum())
+
+# ============================================================
+# 4. CLEAN COLUMN NAMES
+# ============================================================
+
+# Remove spaces and special characters from column names
+
+df.columns = [
+    re.sub(r'[^a-zA-Z0-9]+', '_', col).strip('_').lower()
+    for col in df.columns
+]
+
+print("\nCleaned Column Names:")
+print(df.columns.tolist())
+
+# ============================================================
+# 5. HANDLE MISSING VALUES
+# ============================================================
+
+# Identify numeric and categorical columns
+
+numeric_cols = df.select_dtypes(
+    include=np.number
+).columns
+
+categorical_cols = df.select_dtypes(
+    include="object"
+).columns
+
+# Fill numerical missing values using median
+
+for col in numeric_cols:
+
+    df[col] = df[col].fillna(df[col].median())
+
+# Fill categorical missing values using mode
+
+for col in categorical_cols:
+
+    if df[col].isnull().sum() > 0:
+
+        df[col] = df[col].fillna(
+            df[col].mode()[0]
+        )
+
+print("\nMissing Values After Cleaning:")
+print(df.isnull().sum())
+
+# ============================================================
+# 6. REMOVE DUPLICATE RECORDS
+# ============================================================
+
+df.drop_duplicates(inplace=True)
+
+print("\nDuplicate Records Removed!")
+
+print("Dataset Shape:", df.shape)
+
+# ============================================================
+# 7. DATA MERGING
+# ============================================================
+
+# Create an additional neighborhood dataset
+# if a neighborhood column is available
+
+if "neighborhood" in df.columns:
+
+    neighborhood_data = pd.DataFrame({
+
+        "neighborhood": df["neighborhood"].dropna().unique(),
+
+    })
+
+    neighborhood_data["Area_Type"] = "Residential"
+
+    # Merge neighborhood information
+
+    df = pd.merge(
+        df,
+        neighborhood_data,
+        on="neighborhood",
+        how="left"
+    )
+
+    print("\nNeighborhood Data Merged Successfully!")
+
+else:
+
+    print("\nNeighborhood column not available. Merging skipped.")
+
+# ============================================================
+# 8. FILTER AND SUBSET DATA
+# ============================================================
+
+print("\nAvailable Columns:")
+print(df.columns.tolist())
+
+# Filter properties based on sale price
+
+if "sale_price" in df.columns:
+
+    filtered_data = df[
+        df["sale_price"] > 0
+    ]
+
+    print("\nProperties with Valid Sale Prices:")
+    print(filtered_data.head())
+
+else:
+
+    filtered_data = df.copy()
+
+    print("\nSale price column not found.")
+
+# Filter properties by property type if available
+
+if "property_type" in df.columns:
+
+    property_data = df[
+        df["property_type"].notna()
+    ]
+
+    print("\nProperty Type Data:")
+    print(property_data.head())
+
+# ============================================================
+# 9. HANDLE CATEGORICAL VARIABLES
+# ============================================================
+
+categorical_cols = df.select_dtypes(
+    include="object"
+).columns.tolist()
+
+# Apply one-hot encoding
+
+encoded_df = pd.get_dummies(
+    df,
+    columns=categorical_cols,
+    drop_first=True,
+    dtype=int
+)
+
+print("\nEncoded Dataset:")
+print(encoded_df.head())
+
+# ============================================================
+# 10. DATA AGGREGATION
+# ============================================================
+
+# Average sale price by neighborhood
+
+if "neighborhood" in df.columns and "sale_price" in df.columns:
+
+    neighborhood_sales = df.groupby(
+        "neighborhood"
+    )["sale_price"].mean()
+
+    print("\nAverage Sale Price by Neighborhood:")
+    print(neighborhood_sales)
+
+# Average sale price by property type
+
+if "property_type" in df.columns and "sale_price" in df.columns:
+
+    property_sales = df.groupby(
+        "property_type"
+    )["sale_price"].mean()
+
+    print("\nAverage Sale Price by Property Type:")
+    print(property_sales)
+
+# General statistical summary
+
+print("\nSales Statistical Summary:")
+
+if "sale_price" in df.columns:
+
+    print(df["sale_price"].describe())
+
+# ============================================================
+# 11. IDENTIFY AND HANDLE OUTLIERS
+# ============================================================
+
+numeric_cols = df.select_dtypes(
+    include=np.number
+).columns
+
+print("\nOutliers Before Treatment:")
+
+for col in numeric_cols:
+
+    Q1 = df[col].quantile(0.25)
+
+    Q3 = df[col].quantile(0.75)
+
+    IQR = Q3 - Q1
+
+    lower = Q1 - 1.5 * IQR
+
+    upper = Q3 + 1.5 * IQR
+
+    outliers = (
+        (df[col] < lower) |
+        (df[col] > upper)
+    ).sum()
+
+    print(col, ":", outliers)
+
+    # Handle outliers using capping
+
+    df[col] = df[col].clip(
+        lower=lower,
+        upper=upper
+    )
+
+print("\nOutliers Handled Successfully!")
+
+# ============================================================
+# 12. DATA VISUALIZATION
+# ============================================================
+
+# Sale Price Distribution
+
+if "sale_price" in df.columns:
+
+    plt.figure(figsize=(8, 5))
+
+    sns.histplot(
+        df["sale_price"],
+        kde=True
+    )
+
+    plt.title("Distribution of House Sale Prices")
+
+    plt.xlabel("Sale Price")
+
+    plt.ylabel("Frequency")
+
+    plt.show()
+
+# Average Sale Price by Neighborhood
+
+if "neighborhood" in df.columns and "sale_price" in df.columns:
+
+    plt.figure(figsize=(10, 5))
+
+    df.groupby("neighborhood")["sale_price"].mean().plot(
+        kind="bar"
+    )
+
+    plt.title("Average Sale Price by Neighborhood")
+
+    plt.xlabel("Neighborhood")
+
+    plt.ylabel("Average Sale Price")
+
+    plt.xticks(rotation=45)
+
+    plt.tight_layout()
+
+    plt.show()
+
+# Box Plot for Sale Price
+
+if "sale_price" in df.columns:
+
+    plt.figure(figsize=(8, 5))
+
+    sns.boxplot(
+        x=df["sale_price"]
+    )
+
+    plt.title("Sale Price Outlier Detection")
+
+    plt.xlabel("Sale Price")
+
+    plt.show()
+
+# ============================================================
+# 13. EXPORT CLEANED DATASET
+# ============================================================
+
+# Save cleaned dataset
+
+df.to_csv(
+    "Cleaned_RealEstate_Prices.csv",
+    index=False
+)
+
+# Save encoded dataset
+
+encoded_df = pd.get_dummies(
+    df,
+    columns=df.select_dtypes(include="object").columns,
+    drop_first=True,
+    dtype=int
+)
+
+encoded_df.to_csv(
+    "Encoded_RealEstate_Prices.csv",
+    index=False
+)
+
+print("\nCleaned Dataset Exported Successfully!")
+
+# ============================================================
+# 14. FINAL OUTPUT
+# ============================================================
+
+print("\n======================================")
+
+print("REAL ESTATE DATA WRANGLING COMPLETED")
+
+print("======================================")
+
+print("\nTotal Records:", len(df))
+
+print("Total Columns:", len(df.columns))
+
+print("\nMissing Values:", df.isnull().sum().sum())
+
+print("Duplicate Records:", df.duplicated().sum())
+
+if "sale_price" in df.columns:
+
+    print(
+        "Average Sale Price:",
+        round(df["sale_price"].mean(), 2)
+    )
+
+    print(
+        "Maximum Sale Price:",
+        round(df["sale_price"].max(), 2)
+    )
+
+    print(
+        "Minimum Sale Price:",
+        round(df["sale_price"].min(), 2)
+    )
+
+print("\nAll Tasks Completed Successfully!")
+
+## Data Wrangling is the process of cleaning and transforming raw data into a proper and useful format for analysis.
+
+Step 1: Import Required Libraries
+We use different Python libraries to perform data wrangling.
+- Pandas: Used for data loading, cleaning, filtering, and manipulation.
+- NumPy: Used for numerical calculations.
+- Matplotlib: Used for creating graphs.
+- Seaborn: Used for statistical data visualization.
+- re: Used for cleaning column names with regular expressions.
+
+Step 2: Load the Dataset
+- We load the real estate dataset from a CSV file.
+- The dataset is stored in a DataFrame named df.
+- The first five records are displayed to understand the dataset.
+Important: A DataFrame is a two-dimensional table containing rows and columns.
+
+Step 3: Explore the Dataset
+In this step, we understand the structure and quality of the dataset.
+- Shape: Displays the total number of rows and columns.
+- Info: Displays column names, data types, and non-null values.
+- Describe: Displays statistical information such as mean, minimum, maximum, and standard deviation.
+- Isnull: Identifies missing values.
+- Duplicated: Counts duplicate records.
+
+Step 4: Clean Column Names
+- Removes unnecessary spaces and special characters from column names.
+- Converts all column names into lowercase.
+- Replaces spaces and special characters with underscores.
+Example:
+- Before: Sale Price
+- After: sale_price
+
+Step 5: Handle Missing Values
+Missing values are empty or unavailable values in a dataset.
+
+The program identifies two types of columns:
+1. Numerical columns: Columns containing numbers, such as sale price.
+2. Categorical columns: Columns containing text, such as neighborhood and property type.
+Missing values are handled using:
+- Median: Used to fill missing numerical values.
+- Mode: Used to fill missing categorical values.
+Why median?
+- Median is less affected by extreme values compared with the mean.
+Why mode?
+- Mode represents the most frequently occurring value.
+
+Step 6: Remove Duplicate Records
+- Duplicate records are repeated rows in a dataset.
+- The program removes duplicate rows.
+- The updated dataset shape is displayed.
+
+Step 7: Data Merging
+Data merging means combining two datasets using a common column.
+
+In this practical:
+- A separate neighborhood dataset is created.
+- It contains unique neighborhood names.
+- An additional column named Area_Type is added.
+- Both datasets are merged using the neighborhood column.
+
+Important terms:
+- Left Merge: Keeps all records from the left dataset.
+- Common Column: The column used to connect two datasets.
+If the neighborhood column is unavailable, merging is skipped.
+
+Step 8: Filter and Subset Data
+Filtering means selecting records based on specific conditions.
+
+In this practical:
+- Properties with sale prices greater than zero are selected.
+- Properties with available property types are selected.
+- The selected records are displayed.
+
+Step 9: Handle Categorical Variables
+Machine learning and numerical analysis generally require numerical values.
+
+Therefore, categorical variables are converted into numerical form using One-Hot Encoding.
+- It converts text categories into separate columns.
+- Each category is represented using 0 and 1.
+- drop_first=True removes one category column to avoid redundant information.
+
+Data aggregation means summarizing data using mathematical operations.
+
+In this practical:
+1. Average sale price by neighborhood is calculated.
+2. Average sale price by property type is calculated.
+3. Statistical summary of sale prices is displayed.
+GroupBy: It groups records based on a particular column.
+
+Mean: Calculates the average value.
+
+Step 11: Identify and Handle Outliers
+Outliers are values that are very different from other values in a dataset.
+
+The program uses the IQR method to identify outliers.
+
+Important terms:
+- Q1: First quartile (25th percentile).
+- Q3: Third quartile (75th percentile).
+- IQR: Interquartile Range.
+
+Formula:IQR = Q3 − Q1
+Lower Limit = Q1 − 1.5 × IQR
+Upper Limit = Q3 + 1.5 × IQR
+
+Values outside these limits are considered potential outliers.
+
+Capping:
+- Values below the lower limit are replaced with the lower limit.
+- Values above the upper limit are replaced with the upper limit.
+This reduces the effect of extreme values without deleting the records.
+
+Step 12: Data Visualization
+Data visualization means presenting data using graphs and charts.
+
+Three visualizations are created:
+1. Histogram
+- Displays the distribution of house sale prices.
+- Helps us understand how frequently different price ranges occur.
+2. Bar Chart
+- Displays the average sale price for each neighborhood.
+- Helps compare property prices across neighborhoods.
+3. Box Plot
+- Displays the distribution of sale prices.
+- Helps identify potential outliers and understand the spread of values.
+
+Step 13: Export Cleaned Dataset
+After cleaning and processing, the datasets are saved as CSV files.
+
+Two files are generated:
+1. Cleaned_RealEstate_Prices.csv – Contains the cleaned dataset.
+2. Encoded_RealEstate_Prices.csv – Contains the dataset after categorical variables are converted into numerical columns.
+Purpose: To save the processed data for future analysis.
+
+Q1. What is data filtering?
+Ans: Data filtering is the process of selecting specific records based on given conditions.
+
+Q2. What is categorical encoding?
+Ans: Categorical encoding is the process of converting categorical values into numerical values.
+
+Q3. What is One-Hot Encoding?
+Ans: One-Hot Encoding converts categorical values into separate binary columns containing 0 and 1.

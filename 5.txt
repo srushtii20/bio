@@ -1,0 +1,387 @@
+!pip install pandas numpy matplotlib seaborn scikit-learn xgboost
+# PRACTICAL: ENSEMBLE LEARNING
+# AdaBoost, Gradient Boosting and XGBoost on Iris Dataset
+
+# STEP 1: Import Libraries
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.tree import DecisionTreeClassifier
+
+from xgboost import XGBClassifier
+
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    confusion_matrix,
+    classification_report
+)
+
+# STEP 2: Load Iris Dataset
+
+iris = load_iris()
+
+X = iris.data
+y = iris.target
+
+print("First 5 Rows:")
+print(pd.DataFrame(X, columns=iris.feature_names).head())
+
+print("\nDataset Shape:", X.shape)
+
+print("\nTarget Classes:")
+print(iris.target_names)
+
+
+# STEP 3: Split Dataset
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42,
+    stratify=y
+)
+
+print("\nTraining Data:", X_train.shape)
+print("Testing Data:", X_test.shape)
+
+
+# STEP 4: Create Ensemble Models
+
+models = {
+    "AdaBoost": AdaBoostClassifier(
+        estimator=DecisionTreeClassifier(max_depth=1),
+        n_estimators=50,
+        learning_rate=1.0,
+        random_state=42
+    ),
+
+    "Gradient Boosting": GradientBoostingClassifier(
+        n_estimators=100,
+        learning_rate=0.1,
+        max_depth=3,
+        random_state=42
+    ),
+
+    "XGBoost": XGBClassifier(
+        n_estimators=100,
+        learning_rate=0.1,
+        max_depth=3,
+        objective="multi:softmax",
+        num_class=3,
+        eval_metric="mlogloss",
+        random_state=42
+    )
+}
+
+
+# STEP 5: Train Models and Make Predictions
+
+results = []
+
+predictions = {}
+
+for name, model in models.items():
+
+    model.fit(X_train, y_train)
+
+    y_pred = model.predict(X_test)
+
+    predictions[name] = y_pred
+
+    accuracy = accuracy_score(y_test, y_pred)
+
+    precision = precision_score(
+        y_test, y_pred, average="weighted", zero_division=0
+    )
+
+    recall = recall_score(
+        y_test, y_pred, average="weighted", zero_division=0
+    )
+
+    f1 = f1_score(
+        y_test, y_pred, average="weighted", zero_division=0
+    )
+
+    results.append([
+        name,
+        accuracy,
+        precision,
+        recall,
+        f1
+    ])
+
+    print("\n", name)
+    print(classification_report(
+        y_test,
+        y_pred,
+        target_names=iris.target_names,
+        zero_division=0
+    ))
+
+
+# STEP 6: Compare Model Performance
+
+results_df = pd.DataFrame(
+    results,
+    columns=[
+        "Model",
+        "Accuracy",
+        "Precision",
+        "Recall",
+        "F1 Score"
+    ]
+)
+
+print("\n========== MODEL COMPARISON ==========")
+
+print(results_df)
+
+
+# STEP 7: Visualize Model Performance
+
+results_plot = results_df.set_index("Model")
+
+results_plot.plot(
+    kind="bar",
+    figsize=(10, 6)
+)
+
+plt.title("Performance Comparison of Ensemble Models")
+plt.ylabel("Score")
+plt.xlabel("Models")
+plt.ylim(0, 1.1)
+plt.xticks(rotation=0)
+plt.legend(loc="lower right")
+plt.tight_layout()
+plt.show()
+
+
+# STEP 8: Confusion Matrices
+
+for name, y_pred in predictions.items():
+
+    cm = confusion_matrix(y_test, y_pred)
+
+    plt.figure(figsize=(6, 5))
+
+    sns.heatmap(
+        cm,
+        annot=True,
+        fmt="d",
+        cmap="Blues",
+        xticklabels=iris.target_names,
+        yticklabels=iris.target_names
+    )
+
+    plt.title(name + " Confusion Matrix")
+    plt.xlabel("Predicted Class")
+    plt.ylabel("Actual Class")
+    plt.tight_layout()
+    plt.show()
+
+
+# STEP 9: Find Best Performing Model
+
+best_model = results_df.loc[
+    results_df["Accuracy"].idxmax()
+]
+
+print("\n========== FINAL RESULT ==========")
+
+print("Best Model:", best_model["Model"])
+
+print("Accuracy:", round(best_model["Accuracy"], 4))
+
+print("Precision:", round(best_model["Precision"], 4))
+
+print("Recall:", round(best_model["Recall"], 4))
+
+print("F1 Score:", round(best_model["F1 Score"], 4))
+
+print("\nENSEMBLE LEARNING COMPLETED SUCCESSFULLY!")
+
+## ensemble Learning is a machine learning technique that combines multiple models to improve prediction accuracy and performance.
+
+- It combines multiple weak or strong learners.
+- It improves prediction performance.
+- It helps reduce errors.
+- It provides better results than using some individual models.
+
+STEP 1: Install and Import Libraries
+Installation: The required libraries are installed using the pip package installer.
+- Pandas: Used for data manipulation.
+- NumPy: Used for numerical calculations.
+- Matplotlib: Used to create graphs.
+- Seaborn: Used for data visualization.
+- Scikit-learn: Provides machine learning algorithms and evaluation tools.
+- XGBoost: Used to implement the XGBoost algorithm.
+
+STEP 2: Load Iris Dataset
+- Loads the Iris dataset from the Scikit-learn library.
+- The dataset contains 150 flower records.
+- It contains three different flower classes.
+- Each flower has four numerical features.
+Four Features:
+1. Sepal Length
+2. Sepal Width
+3. Petal Length
+4. Petal Width
+Three Target Classes:
+1. Iris Setosa
+2. Iris Versicolor
+3. Iris Virginica
+   - X represents input features.
+   - y represents target labels.
+   - Displays the first five records.
+   - Displays the dataset shape and target classes.
+
+STEP 3: Split Dataset
+- Divides the dataset into training and testing data.
+- 80% data is used for training.
+- 20% data is used for testing.
+- Training data helps the models learn patterns.
+- Testing data evaluates model performance.
+- Random state ensures reproducible splitting.
+- Stratify maintains the proportion of each class in both sets.
+
+STEP 4: Create Ensemble Models
+Three ensemble learning algorithms are created.
+
+1. AdaBoost (Adaptive Boosting)
+- AdaBoost stands for Adaptive Boosting.
+- It combines multiple weak learners to create a strong learner.
+- It gives more importance to incorrectly classified data points.
+- Each new learner tries to correct the errors of the previous learner.
+- It improves classification performance.
+Important Parameters:
+- Estimator: Defines the base learning algorithm.
+- n_estimators: Number of weak learners.
+- Learning Rate: Controls the contribution of each learner.
+2. Gradient Boosting (GBM)
+- Gradient Boosting stands for Gradient Boosting Machine.
+- It builds models sequentially.
+- Each new model tries to correct the errors of the previous models.
+- It uses gradient descent to minimize prediction errors.
+- It improves the overall prediction performance.
+Important Parameters:
+- n_estimators: Number of boosting stages.
+- learning_rate: Controls the contribution of each model.
+- max_depth: Controls the maximum depth of decision trees.
+3. XGBoost (Extreme Gradient Boosting)
+- XGBoost stands for Extreme Gradient Boosting.
+- It is an advanced boosting algorithm.
+- It is based on Gradient Boosting.
+- It uses regularization to reduce overfitting.
+- It is designed for fast and efficient model training.
+- It is widely used for classification and regression problems.
+
+Important Parameters:
+- n_estimators: Number of boosting rounds.
+- learning_rate: Controls the learning speed.
+- max_depth: Controls tree depth.
+- objective: Defines the prediction task.
+- num_class: Specifies the number of classes.
+
+STEP 5: Train Models and Make Predictions
+- Each model is trained using the training dataset.
+- The models learn patterns from the input features.
+- After training, predictions are made using testing data.
+- Predicted values are compared with actual values.
+- Accuracy, Precision, Recall and F1-Score are calculated.
+- Classification reports are displayed for each model.
+
+STEP 6: Compare Model Performance
+Four evaluation metrics are used.
+
+1. Accuracy
+- Measures the percentage of correct predictions.
+- Higher accuracy indicates better performance.
+2. Precision
+- Measures how many predicted positive results are actually correct.
+- Higher precision indicates fewer false positive predictions.
+3. Recall
+- Measures how many actual positive samples are correctly identified.
+- Higher recall indicates fewer missed positive samples.
+4. F1-Score
+- It is the harmonic mean of Precision and Recall.
+- It balances both evaluation metrics.
+
+STEP 7: Visualize Model Performance
+- Displays a bar graph of model performance.
+- Compares Accuracy, Precision, Recall and F1-Score.
+- Different bars represent different evaluation metrics.
+- Helps identify which algorithm performs better.
+
+STEP 8: Confusion Matrices
+- A confusion matrix evaluates classification performance.
+- It compares actual classes with predicted classes.
+- Rows represent actual classes.
+- Columns represent predicted classes.
+- Diagonal values represent correct predictions.
+- Other values represent incorrect predictions.
+
+STEP 9: Find Best Performing Model
+- Compares the accuracy of all three models.
+- Identifies the model with the highest accuracy.
+- Displays the best-performing model.
+- Displays its Accuracy, Precision, Recall and F1-Score.
+Purpose: To identify the best ensemble learning algorithm for the Iris dataset.
+
+Q1. What is Boosting?
+Boosting is an ensemble technique that combines multiple weak learners sequentially to create a strong model.
+
+Q2. What is a weak learner?
+A weak learner is a model that performs slightly better than random guessing.
+
+Q3. What is AdaBoost?
+AdaBoost stands for Adaptive Boosting. It gives more importance to incorrectly classified data points so that the next learner can focus on them.
+
+Q4. What is Gradient Boosting?
+Gradient Boosting builds models sequentially, where each new model tries to reduce the errors made by the previous models.
+
+Q5. What is XGBoost?
+XGBoost stands for Extreme Gradient Boosting. It is an optimized and efficient implementation of gradient boosting.
+
+Q6. What is the difference between Gradient Boosting and XGBoost?
+- Gradient Boosting is a boosting algorithm.
+- XGBoost is an optimized implementation of gradient boosting.
+- XGBoost includes additional regularization and performance improvements.
+
+Q7. What is a Decision Tree?
+A Decision Tree is a supervised learning algorithm that makes predictions using a tree-like structure of decisions.
+
+Q8. Why is Decision Tree used in AdaBoost in this practical?
+A shallow Decision Tree is used as a weak learner. It helps AdaBoost build a stronger model by combining multiple weak learners.
+
+Q9. What is accuracy?
+Accuracy measures the percentage of correctly predicted values.
+
+Q10. What is precision?
+Precision tells us how many predicted positive results are actually correct.
+
+Q11. What is recall?
+Recall measures how many actual positive cases are correctly identified.
+
+Q12. What is F1-score?
+F1-score is the harmonic mean of precision and recall.
+
+Q13. What is a confusion matrix?
+A confusion matrix compares actual and predicted classes and shows correct and incorrect predictions.
+
+Q14. What is a classification report?
+It displays precision, recall, F1-score, and support for each class.
+
+Q15. What is weighted average?
+Weighted average calculates the average evaluation score by giving importance according to the number of samples in each class.
+

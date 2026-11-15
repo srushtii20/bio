@@ -1,0 +1,435 @@
+# PRACTICAL: REINFORCEMENT LEARNING
+# Tic-Tac-Toe Game using Q-Learning
+
+# STEP 1: Import Libraries
+
+import numpy as np
+import random
+
+# STEP 2: Define Tic-Tac-Toe Environment
+
+class TicTacToe:
+
+    def __init__(self):
+        self.board = np.zeros(9, dtype=int)
+
+    def reset(self):
+        self.board = np.zeros(9, dtype=int)
+        return tuple(self.board)
+
+    def available_actions(self):
+        return [i for i in range(9) if self.board[i] == 0]
+
+    def make_move(self, action, player):
+        if self.board[action] == 0:
+            self.board[action] = player
+            return True
+        return False
+
+    def check_winner(self):
+
+        win_positions = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8],
+            [0, 3, 6], [1, 4, 7], [2, 5, 8],
+            [0, 4, 8], [2, 4, 6]
+        ]
+
+        for position in win_positions:
+            if abs(sum(self.board[position])) == 3:
+                return int(self.board[position[0]])
+
+        if 0 not in self.board:
+            return 0
+
+        return None
+
+    def display(self):
+
+        symbols = {1: "X", -1: "O", 0: " "}
+
+        for i in range(0, 9, 3):
+            print(
+                " | ".join(
+                    symbols[self.board[j]]
+                    for j in range(i, i + 3)
+                )
+            )
+
+            if i < 6:
+                print("---------")
+
+
+# STEP 3: Build Q-Learning Model
+
+class QLearningAgent:
+
+    def __init__(self, alpha=0.1, gamma=0.9, epsilon=0.2):
+
+        self.q_table = {}
+
+        self.alpha = alpha
+        self.gamma = gamma
+        self.epsilon = epsilon
+
+    def get_q_values(self, state):
+
+        if state not in self.q_table:
+            self.q_table[state] = np.zeros(9)
+
+        return self.q_table[state]
+
+    def choose_action(self, state, actions, training=True):
+
+        if training and random.random() < self.epsilon:
+            return random.choice(actions)
+
+        q_values = self.get_q_values(state)
+
+        return max(actions, key=lambda a: q_values[a])
+
+    def learn(self, state, action, reward, next_state, next_actions):
+
+        old_value = self.get_q_values(state)[action]
+
+        if next_actions:
+            future_value = max(
+                self.get_q_values(next_state)[a]
+                for a in next_actions
+            )
+        else:
+            future_value = 0
+
+        new_value = old_value + self.alpha * (
+            reward + self.gamma * future_value - old_value
+        )
+
+        self.q_table[state][action] = new_value
+
+
+# STEP 4: Train the Model
+
+env = TicTacToe()
+
+agent = QLearningAgent()
+
+episodes = 20000
+
+for episode in range(episodes):
+
+    state = env.reset()
+
+    done = False
+
+    while not done:
+
+        actions = env.available_actions()
+
+        # Agent plays X
+        action = agent.choose_action(state, actions)
+
+        env.make_move(action, 1)
+
+        next_state = tuple(env.board)
+
+        winner = env.check_winner()
+
+        if winner is not None:
+
+            reward = 1 if winner == 1 else 0
+
+            agent.learn(
+                state, action, reward,
+                next_state, []
+            )
+
+            break
+
+        # Random opponent plays O
+        opponent_action = random.choice(
+            env.available_actions()
+        )
+
+        env.make_move(opponent_action, -1)
+
+        winner = env.check_winner()
+
+        if winner is not None:
+
+            reward = -1 if winner == -1 else 0
+
+            agent.learn(
+                state, action, reward,
+                tuple(env.board), []
+            )
+
+            break
+
+        next_state = tuple(env.board)
+
+        next_actions = env.available_actions()
+
+        agent.learn(
+            state,
+            action,
+            0,
+            next_state,
+            next_actions
+        )
+
+        state = next_state
+
+print("Training Completed Successfully!")
+
+
+# STEP 5: Test the Trained Model
+
+def play_game():
+
+    env.reset()
+
+    print("\nTIC-TAC-TOE GAME")
+    print("You are O")
+    print("Computer is X")
+
+    while True:
+
+        # Computer move
+        state = tuple(env.board)
+
+        actions = env.available_actions()
+
+        action = agent.choose_action(
+            state, actions, training=False
+        )
+
+        env.make_move(action, 1)
+
+        print("\nComputer Move:")
+        env.display()
+
+        winner = env.check_winner()
+
+        if winner is not None:
+
+            if winner == 1:
+                print("Computer Wins!")
+            else:
+                print("Game Draw!")
+
+            break
+
+        # Human move
+        while True:
+
+            try:
+                move = int(input("\nEnter position (1-9): ")) - 1
+
+                if move in env.available_actions():
+                    break
+
+                print("Invalid position! Try again.")
+
+            except ValueError:
+                print("Please enter a number from 1 to 9.")
+
+        env.make_move(move, -1)
+
+        print("\nYour Move:")
+        env.display()
+
+        winner = env.check_winner()
+
+        if winner is not None:
+
+            if winner == -1:
+                print("You Win!")
+            else:
+                print("Game Draw!")
+
+            break
+
+
+# STEP 6: Display Position Guide
+
+print("\nPosition Guide:")
+
+print("1 | 2 | 3")
+print("---------")
+print("4 | 5 | 6")
+print("---------")
+print("7 | 8 | 9")
+
+# Start Game
+
+play_game()
+
+print("\nTIC-TAC-TOE REINFORCEMENT LEARNING COMPLETED!")
+
+##Reinforcement Learning (RL) is a type of machine learning in which an agent learns by interacting with an environment and receiving rewards or penalties for its actions.
+
+Important Components of Reinforcement Learning
+1. Agent: The learner or decision-maker. Here, the computer is the agent.
+2. Environment: The place where the agent performs actions. Here, it is the Tic-Tac-Toe game.
+3. State: The current position of the game board.
+4. Action: A move selected by the agent.
+5. Reward: Feedback received after performing an action.
+6. Policy: The strategy used by the agent to select actions.
+
+STEP 1: Import Libraries
+- NumPy: Used to create and manage the game board.
+- Random: Used to select random moves during training and opponent gameplay.
+Purpose: To perform numerical operations and generate random actions.
+STEP 2: Define Tic-Tac-Toe Environment
+In this step, we create the Tic-Tac-Toe game environment.
+
+Important operations:
+
+1. Initialize the Game
+- Creates an empty game board.
+- The board contains 9 positions.
+- Zero represents an empty position.
+- 1 represents player X.
+- -1 represents player O.
+2. Reset the Game
+- Clears all positions on the board.
+- Starts a new game.
+- Returns the initial game state.
+3. Available Actions
+- Checks which positions are empty.
+- Returns the available positions where a player can make a move.
+4. Make Move
+- Places X or O at the selected position.
+- Checks whether the selected position is empty.
+- Prevents players from occupying an already-filled position.
+5. Check Winner
+- Checks all possible winning combinations.
+- There are 8 winning combinations:
+  - 3 horizontal
+  - 3 vertical
+  - 2 diagonal
+- Returns 1 if X wins.
+- Returns -1 if O wins.
+- Returns 0 if the game is a draw.
+- Returns None if the game is still running.
+6. Display
+- Displays the current Tic-Tac-Toe board.
+- Shows X, O and empty positions.
+Purpose: To create the environment and define the rules of the Tic-Tac-Toe game.
+STEP 3: Build Q-Learning Model
+Q-Learning is a model-free Reinforcement Learning algorithm that helps an agent learn the best actions through rewards and penalties.
+
+Important components:
+
+1. Q-Table
+- Stores the values of different actions for each game state.
+- Helps the agent select better moves.
+- Higher Q-values indicate better expected rewards.
+2. Learning Rate (Alpha)
+- Controls how much new information is used to update Q-values.
+- Its value is 0.1 in this practical.
+3. Discount Factor (Gamma)
+- Determines the importance of future rewards.
+- Its value is 0.9 in this practical.
+4. Exploration Rate (Epsilon)
+- Controls how often the agent selects random actions.
+- Its value is 0.2 in this practical.
+5. Choose Action
+- Selects an action based on the Q-table.
+- Sometimes selects a random action for exploration.
+- Otherwise selects the action with the highest Q-value.
+6. Learn
+- Updates the Q-values based on the reward received.
+- Helps the agent improve its future decisions.
+
+STEP 4: Train the Model
+- Creates the Tic-Tac-Toe environment.
+- Creates the Q-Learning agent.
+- The agent is trained for 20,000 episodes.
+- Each episode represents one complete game or game attempt.
+- The computer plays as X.
+- A random opponent plays as O.
+- The agent observes the game state and selects an action.
+- Rewards or penalties are given based on the game result.
+- The Q-table is updated after each move.
+- The process continues until training is completed.
+Reward System:
+Game Result	Reward
+Computer wins (X)	+1
+Computer loses (O wins)	-1
+Draw	0
+
+STEP 5: Test the Trained Model
+- After training, the agent is tested by playing against a human.
+- The computer plays as X.
+- The user plays as O.
+- The computer selects moves using the learned Q-table.
+- The user enters a position between 1 and 9.
+- The game checks whether the entered position is valid.
+- The board is displayed after every move.
+- The game continues until someone wins or the match ends in a draw.
+
+Q1. What is Q-Learning?
+Q-Learning is a reinforcement learning algorithm that helps an agent learn the best action to take in a particular state.
+
+Q2. What is an agent?
+An agent is the learner or decision-maker that interacts with the environment. In this practical, the computer is the agent.
+
+Q3. What is an environment?
+An environment is the place where the agent performs actions. Here, the Tic-Tac-Toe game board is the environment.
+
+Q4. What is a state?
+A state represents the current condition of the game board.
+
+Q5. What is an action?
+An action is a move performed by the agent. In this practical, it means selecting an empty position on the board.
+
+Q6. What is a reward?
+A reward is feedback given to the agent based on its action or result.
+- Win: +1
+- Loss: -1
+- Draw or intermediate move: 0
+
+Q7. What is a Q-table?
+A Q-table stores the Q-values of different actions for different states. It helps the agent choose better actions.
+
+Q8. What is a Q-value?
+A Q-value represents the expected future reward for taking a particular action in a particular state.
+
+Q9. What is the learning rate (Alpha)?
+Alpha controls how much new information is used to update the existing Q-value.
+
+Q10. What is the discount factor (Gamma)?
+Gamma determines how much importance the agent gives to future rewards.
+
+Q11. What is Epsilon?
+Epsilon controls the probability of selecting a random action during training.
+
+Q12. What is the exploration-exploitation trade-off?
+- Exploration: Trying new or random actions.
+- Exploitation: Choosing the action with the highest learned Q-value.
+
+Q13. What is an episode?
+An episode is one complete game from the starting state until someone wins or the game ends in a draw.
+
+Q14. Why are 20,000 episodes used in this practical?
+To give the agent many opportunities to learn from different game situations.
+
+Q15. What is the use of available_actions()?
+It returns all the empty positions available on the Tic-Tac-Toe board.
+
+Q16. What is the use of check_winner()?
+It checks whether a player has won, the game is a draw, or the game is still continuing.
+
+Q17. Why do we use random.choice()?
+It randomly selects an available action for exploration or for the opponent's move.
+
+Q18. Why does the computer play X and the human play O?
+In this code, X is represented by 1 and O is represented by -1. The computer plays X and the human plays O.
+
+How Tic-Tac-Toe Works in the Background
+1. First, the computer creates an empty Tic-Tac-Toe board.
+2. It practises playing 20,000 games against a random opponent.
+3. It tries different moves and learns from its mistakes.
+4. If it wins, it gets +1 reward. If it loses, it gets -1 reward.
+5. It stores its learning in a Q-table.
+6. After training, the computer plays against the human using what it has learned.

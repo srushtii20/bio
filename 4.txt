@@ -1,0 +1,253 @@
+# PRACTICAL: CLUSTERING ANALYSIS
+# K-Means Clustering on Iris Dataset
+
+# STEP 1: Import Libraries
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+
+# STEP 2: Load Dataset
+
+df = pd.read_csv(r"C:\Users\HP\Downloads\Iris.csv")
+
+print("First 5 Rows:")
+print(df.head())
+
+print("\nDataset Shape:")
+print(df.shape)
+
+# STEP 3: Data Preprocessing
+
+# Remove unnecessary columns
+df.drop(columns=["Id"], errors="ignore", inplace=True)
+
+# Separate numerical features
+X = df.select_dtypes(include=np.number)
+
+# Handle missing values
+X = X.fillna(X.median())
+
+print("\nSelected Features:")
+print(X.head())
+
+# STEP 4: Feature Scaling
+
+scaler = StandardScaler()
+
+X_scaled = scaler.fit_transform(X)
+
+print("\nFeature Scaling Completed!")
+
+# STEP 5: Elbow Method
+
+wcss = []
+
+for i in range(1, 11):
+
+    kmeans = KMeans(
+        n_clusters=i,
+        random_state=42,
+        n_init=10
+    )
+
+    kmeans.fit(X_scaled)
+
+    wcss.append(kmeans.inertia_)
+
+# Plot Elbow Graph
+
+plt.figure(figsize=(8, 5))
+
+plt.plot(
+    range(1, 11),
+    wcss,
+    marker="o"
+)
+
+plt.title("Elbow Method")
+plt.xlabel("Number of Clusters (K)")
+plt.ylabel("WCSS")
+plt.xticks(range(1, 11))
+plt.show()
+
+# STEP 6: Apply K-Means Clustering
+
+# Iris dataset generally has 3 clusters
+
+kmeans = KMeans(
+    n_clusters=3,
+    random_state=42,
+    n_init=10
+)
+
+y_kmeans = kmeans.fit_predict(X_scaled)
+
+# Add cluster labels to dataset
+df["Cluster"] = y_kmeans
+
+print("\nClustered Dataset:")
+print(df.head())
+
+# STEP 7: Display Number of Clusters
+
+print("\nCluster Counts:")
+print(df["Cluster"].value_counts())
+
+# STEP 8: Visualize Clusters using PCA
+
+pca = PCA(n_components=2)
+
+X_pca = pca.fit_transform(X_scaled)
+
+plt.figure(figsize=(8, 6))
+
+plt.scatter(
+    X_pca[:, 0],
+    X_pca[:, 1],
+    c=y_kmeans,
+    cmap="viridis",
+    s=50
+)
+
+plt.title("K-Means Clustering on Iris Dataset")
+plt.xlabel("Principal Component 1")
+plt.ylabel("Principal Component 2")
+plt.colorbar(label="Cluster")
+plt.show()
+
+# STEP 9: Final Result
+
+print("\n========== FINAL RESULT ==========")
+
+print("Optimal Number of Clusters: 3")
+
+print("Clustering Algorithm: K-Means")
+
+print("Number of Clusters:", len(np.unique(y_kmeans)))
+
+print("\nK-MEANS CLUSTERING COMPLETED SUCCESSFULLY!")
+
+## Clustering is an unsupervised machine learning technique used to group similar data points based on their characteristics.
+
+STEP 1: Import Libraries
+- Pandas: Used to load and manipulate datasets.
+- NumPy: Used for numerical calculations.
+- Matplotlib: Used to create graphs.
+- Seaborn: Used for data visualization.
+- KMeans: Used to perform K-Means clustering.
+- StandardScaler: Used to standardize numerical features.
+- PCA: Used for dimensionality reduction and visualization.
+
+STEP 2: Load Dataset
+- Loads the Iris dataset from a CSV file.
+- Displays the first five records.
+- Displays the number of rows and columns.
+- Helps us understand the dataset structure.
+About Iris Dataset:
+The Iris dataset contains flower measurements of three Iris species:
+1. Iris Setosa
+2. Iris Versicolor
+3. Iris Virginica
+It contains four important numerical features:
+- Sepal Length
+- Sepal Width
+- Petal Length
+- Petal Width
+
+STEP 3: Data Preprocessing
+Data preprocessing means cleaning and preparing the dataset before applying the clustering algorithm.
+
+Important operations:
+1. Remove Unnecessary Columns: Removes the ID column because it is not useful for clustering.
+2. Select Numerical Features: Selects only numerical columns from the dataset.
+3. Handle Missing Values: Replaces missing values with the median of each column.
+4. Display Selected Features: Shows the numerical features used for clustering.
+
+STEP 4: Feature Scaling
+- Feature scaling converts numerical features into a common scale.
+- StandardScaler is used for standardization.
+- It converts features to approximately zero mean and unit standard deviation.
+- It prevents features with larger values from dominating the clustering process.
+
+STEP 5: Elbow Method
+- The Elbow Method is used to find the optimal number of clusters.
+- It tests different values of K, from 1 to 10.
+- WCSS is calculated for each value of K.
+- WCSS stands for Within-Cluster Sum of Squares.
+- It measures the sum of squared distances between data points and their cluster centers.
+- As the number of clusters increases, WCSS decreases
+.
+How does the Elbow Method work?
+- A graph is plotted between the number of clusters (K) and WCSS.
+- We observe the point where the decrease in WCSS becomes slower.
+- This point looks like an elbow.
+- The elbow point helps select the optimal number of clusters.
+
+STEP 6: Apply K-Means Clustering
+K-Means is an unsupervised machine learning algorithm used to divide data into K groups or clusters.
+
+Important points:
+- K represents the number of clusters.
+- Each cluster has a center called a centroid.
+- Data points are assigned to the nearest centroid.
+- The centroids are updated repeatedly.
+- The process continues until the clusters become stable.
+In this practical:
+- The number of clusters is set to 3.
+- K-Means groups similar flowers into three clusters.
+- The cluster labels are added to the original dataset.
+
+STEP 7: Display Number of Clusters
+- Displays the number of data points in each cluster.
+- Helps understand how the dataset is divided.
+- Each data point is assigned a cluster label.
+- The labels are generally represented as 0, 1 and 2.
+
+STEP 8: Visualize Clusters Using PCA
+- PCA stands for Principal Component Analysis.
+- It is used for dimensionality reduction.
+- It converts the original four numerical features into two principal components.
+- The clusters are displayed using a scatter plot.
+- Different colours represent different clusters.
+- The X-axis represents Principal Component 1.
+- The Y-axis represents Principal Component 2.
+
+STEP 9: Final Result
+- Displays the optimal number of clusters.
+- Displays the clustering algorithm used.
+- Shows the total number of clusters formed.
+- Confirms successful completion of clustering analysis.
+
+Q1. What is K-Means clustering?
+K-Means is an unsupervised learning algorithm that divides data into K clusters based on similarity.
+
+Q2. What is unsupervised learning?
+Unsupervised learning is a type of machine learning in which the model learns from data without predefined labels.
+
+Q3. What is the Elbow Method?
+The Elbow Method is used to find a suitable number of clusters for K-Means.
+
+Q4. What is WCSS?
+WCSS stands for Within-Cluster Sum of Squares. It measures the total squared distance between data points and their cluster centroids.
+
+Q5. Why do we use the Elbow Graph?
+To identify the point where the decrease in WCSS becomes slower. This point helps select the number of clusters.
+
+Q6. What is PCA?
+PCA stands for Principal Component Analysis. It reduces the number of features while preserving as much information as possible.
+
+Q7. Why do we use PCA in this practical?
+To reduce the four numerical features into two dimensions so that clusters can be visualized easily.
+
+Q8. Is PCA used for clustering in this code?
+No. K-Means performs clustering on the standardized original features. PCA is used only to visualize the clusters.
+
+Q9. What is the difference between clustering and classification?
+- Clustering groups data without predefined labels.
+- Classification predicts predefined categories using labelled data.
