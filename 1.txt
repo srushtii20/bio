@@ -1,0 +1,198 @@
+# PRACTICAL: FEATURE TRANSFORMATION USING PCA
+
+# STEP 1: Import Libraries
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+
+# STEP 2: Load Dataset
+
+df = pd.read_csv(r"C:\Users\HP\Downloads\Wine dataset.csv")
+
+print("First 5 Rows:")
+print(df.head())
+
+print("\nDataset Shape:")
+print(df.shape)
+
+# STEP 3: Check Missing Values
+
+print("\nMissing Values:")
+print(df.isnull().sum())
+
+# STEP 4: Separate Features and Target
+
+# Change 'type' if your wine type column has another name
+target = "type"
+
+if target in df.columns:
+    y = df[target]
+    X = df.drop(columns=[target])
+else:
+    y = None
+    X = df.copy()
+
+# Select only numerical columns
+X = X.select_dtypes(include=np.number)
+
+# Fill missing values
+X = X.fillna(X.median())
+
+# STEP 5: Standardize Data
+
+scaler = StandardScaler()
+
+X_scaled = scaler.fit_transform(X)
+
+# STEP 6: Apply PCA
+
+pca = PCA(n_components=2)
+
+X_pca = pca.fit_transform(X_scaled)
+
+pca_df = pd.DataFrame(
+    X_pca,
+    columns=["PC1", "PC2"]
+)
+
+if y is not None:
+    pca_df["Wine_Type"] = y.values
+
+print("\nPCA Transformed Data:")
+print(pca_df.head())
+
+# STEP 7: Display Explained Variance
+
+print("\nExplained Variance Ratio:")
+print(pca.explained_variance_ratio_)
+
+print(
+    "\nTotal Variance Retained:",
+    round(sum(pca.explained_variance_ratio_) * 100, 2),
+    "%"
+)
+
+# STEP 8: Visualize PCA Results
+
+plt.figure(figsize=(8, 6))
+
+if y is not None:
+    sns.scatterplot(
+        data=pca_df,
+        x="PC1",
+        y="PC2",
+        hue="Wine_Type"
+    )
+else:
+    plt.scatter(
+        pca_df["PC1"],
+        pca_df["PC2"]
+    )
+
+plt.title("PCA - Wine Dataset")
+plt.xlabel("Principal Component 1")
+plt.ylabel("Principal Component 2")
+plt.show()
+
+# STEP 9: Scree Plot
+
+plt.figure(figsize=(7, 5))
+
+plt.bar(
+    ["PC1", "PC2"],
+    pca.explained_variance_ratio_
+)
+
+plt.title("PCA Explained Variance")
+plt.xlabel("Principal Components")
+plt.ylabel("Variance Ratio")
+plt.show()
+
+# STEP 10: Save Transformed Data
+
+pca_df.to_csv("Wine_PCA_Result.csv", index=False)
+
+print("\nPCA Result Saved Successfully!")
+print("Original Features:", X.shape[1])
+print("Reduced Features:", 2)
+print("\nPCA DIMENSIONALITY REDUCTION COMPLETED!")
+
+
+## Introduction to PCA
+PCA (Principal Component Analysis) is a dimensionality reduction technique used in machine learning.
+- It reduces the number of features in a dataset.
+- It converts original features into new features called Principal Components.
+- It helps to reduce data complexity.
+- It retains maximum possible information from the original dataset.
+- It is useful for data visualization and faster processing.
+
+pandas: Used to read and manipulate datasets.
+numpy: Used for numerical calculations.
+matplotlib.pyplot: Used to create graphs and visualizations.
+seaborn: Used to create attractive statistical graphs.
+StandardScaler: Used to standardize the dataset.
+PCA: Used to perform Principal Component Analysis.
+
+pd.read_csv() loads the CSV file.
+df.head() displays the first five rows of the dataset.
+df.shape displays the number of rows and columns.
+It helps us understand the structure of the dataset.
+
+isnull() checks for missing values.
+sum() counts the missing values in each column.
+It helps identify incomplete data.
+
+target = "type" specifies the target column.
+y stores the target variable (wine type).
+X stores the input features.
+drop() removes the target column from the input features.
+If the target column is not available, the entire dataset is used as input.
+
+X = X.select_dtypes(include=np.number) :Selects only numerical columns.
+Removes non-numerical columns from the dataset.
+
+illna() replaces missing values.
+median() calculates the median of each column.
+It helps handle missing data.
+
+StandardScaler() creates a standardization object.
+fit_transform() standardizes the dataset.
+It converts the features to a common scale.
+Standardization makes the mean approximately 0 and standard deviation 1.
+
+PCA(n_components=2) reduces the dataset to two principal components.
+fit_transform() applies PCA to the standardized data.
+PC1 represents the first principal component.
+PC2 represents the second principal component.
+
+PC1 represents the maximum possible variance.
+PC2 represents the next maximum variance.
+
+plt.figure() creates a figure for the graph.
+sns.scatterplot() creates a scatter plot.
+PC1 is displayed on the X-axis.
+PC2 is displayed on the Y-axis.
+hue="Wine_Type" displays different wine types using different colours.
+plt.title() adds the graph title.
+plt.xlabel() and plt.ylabel() add axis labels.
+plt.show() displays the graph.
+
+principal components?
+Principal components are new features created by combining the original features of a dataset.
+
+Q3. What is dimensionality reduction?
+Dimensionality reduction is the process of reducing the number of features in a dataset while preserving important information.
+
+Q5. What is a feature?
+A feature is an individual column or attribute in a dataset used for analysis.
+
+Q6. What is a principal component?
+A principal component is a new feature created by combining the original features. It captures important information from the dataset.
+
+Q9. What is standardization?
+Standardization is the process of converting data into a common scale with mean 0 and standard deviation 1.
