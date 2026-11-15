@@ -1,0 +1,265 @@
+# Sales Data Analysis using CSV, Excel and JSON
+
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# 1. Load CSV file
+
+csv_data = pd.read_csv(
+    r"C:\Users\HP\Downloads\Superstore.csv",
+    encoding="latin1"
+)
+
+print("Dataset Loaded Successfully!")
+
+# Create Excel and JSON files
+
+csv_data.to_excel("Superstore.xlsx", index=False)
+csv_data.to_json("Superstore.json", orient="records")
+
+# 2. Load data from all three formats
+
+excel_data = pd.read_excel("Superstore.xlsx")
+json_data = pd.read_json("Superstore.json")
+
+print("\nCSV Data:")
+print(csv_data.head())
+
+print("\nExcel Data:")
+print(excel_data.head())
+
+print("\nJSON Data:")
+print(json_data.head())
+
+# 3. Check data
+
+print("\nNull Values:")
+print(csv_data.isnull().sum())
+
+print("\nDuplicates:")
+print(csv_data.duplicated().sum())
+
+# 4. Data Cleaning
+
+data = csv_data.dropna()
+data = data.drop_duplicates()
+
+# 5. Data Transformation
+
+data["Order Date"] = pd.to_datetime(data["Order Date"])
+
+data["Profit %"] = (data["Profit"] / data["Sales"]) * 100
+
+# 6. Data Analysis
+
+print("\nTotal Sales:", data["Sales"].sum())
+
+print("Average Sales:", data["Sales"].mean())
+
+print("Total Profit:", data["Profit"].sum())
+
+print("\nSales by Category:")
+
+print(data.groupby("Category")["Sales"].sum())
+
+# 7. Visualization
+
+# Bar Chart
+
+data.groupby("Category")["Sales"].sum().plot(kind="bar")
+
+plt.title("Sales by Category")
+plt.xlabel("Category")
+plt.ylabel("Sales")
+plt.show()
+
+# Pie Chart
+
+data["Category"].value_counts().plot(
+    kind="pie",
+    autopct="%1.1f%%"
+)
+
+plt.title("Category Distribution")
+plt.ylabel("")
+plt.show()
+
+# Box Plot
+
+plt.boxplot(data["Sales"])
+
+plt.title("Sales Distribution")
+plt.ylabel("Sales")
+plt.show()
+
+print("\nSales Data Analysis Completed Successfully!")
+
+##The main purpose is to analyze sales performance and understand which product categories generate more sales.
+
+Step 1: Import Required Libraries
+Two Python libraries are used:
+- Pandas: Used for loading, cleaning, manipulating, and analyzing data.
+- Matplotlib: Used for creating graphs and charts.
+
+Step 2: Load CSV File
+- The Superstore dataset is loaded from a CSV file.
+- The dataset is stored in a DataFrame named csv_data.
+- Latin-1 encoding is used to handle special characters in the dataset.
+
+What is CSV?
+CSV stands for Comma-Separated Values. It stores tabular data in rows and columns, with values separated by commas.
+
+Step 3: Create Excel and JSON Files
+The CSV dataset is converted into two other formats:
+1. Excel: The data is saved as Superstore.xlsx.
+2. JSON: The data is saved as Superstore.json.
+
+What is Excel?
+Excel is a spreadsheet file format used to store and organize data in rows and columns.
+
+What is JSON?
+JSON stands for JavaScript Object Notation. It stores data in key-value pairs and is commonly used for exchanging data between applications.
+
+Step 4: Load Data from All Three Formats
+The program loads the data from:
+- CSV file.
+- Excel file.
+- JSON file.
+The first five records of each dataset are displayed.
+
+Step 5: Check Data
+In this step, we check the quality of the dataset.
+
+1. Null Values
+- Identifies missing values in each column.
+- Helps us understand which columns contain incomplete information.
+2. Duplicate Records
+- Counts repeated rows in the dataset.
+- Helps identify unnecessary duplicate information.
+
+Step 6: Data Cleaning
+Data cleaning is performed to improve data quality.
+
+Two operations are performed:
+
+1. Remove Missing Values
+- Records containing missing values are removed.
+- This creates a dataset without missing entries.
+2. Remove Duplicate Records
+- Repeated rows are removed.
+- Only unique records are retained.
+The cleaned dataset is stored in a new DataFrame named data.
+
+Step 7: Data Transformation
+Data transformation means converting data into a suitable format for analysis.
+
+Two operations are performed:
+
+1. Convert Order Date
+- The Order Date column is converted into datetime format.
+- This makes date-based operations easier.
+2. Calculate Profit Percentage
+
+The profit percentage is calculated to understand how much profit is earned compared with sales.
+
+Formula:Profit Percentage = (Profit / Sales) × 100
+
+Step 8: Data Analysis
+In this step, important sales statistics are calculated.
+
+1. Total Sales
+- Calculates the sum of all sales values.
+- Represents the total sales amount.
+2. Average Sales
+- Calculates the average sales value.
+- Helps understand the average value of sales transactions.
+3. Total Profit
+- Calculates the sum of all profit values.
+- Represents the total profit earned.
+4. Sales by Category
+- Groups sales records according to product category.
+- Calculates the total sales for each category.
+
+Step 9: Bar Chart – Sales by Category
+- A bar chart is created to display sales by product category.
+- Each bar represents a category.
+- The height of each bar represents total sales.
+
+Step 10: Pie Chart – Category Distribution
+- A pie chart is created to show the distribution of records across product categories.
+- Each slice represents one category.
+- The percentage of each category is displayed.
+
+Step 11: Box Plot – Sales Distribution
+- A box plot is created to display the distribution of sales values.
+- It shows the median, quartiles, and potential outliers.
+Purpose: To understand the spread of sales values and identify unusually high or low sales transactions.
+
+Q3. What is CSV?
+CSV stands for Comma-Separated Values. It stores data in tabular form.
+
+Q4. What is Excel?
+Excel is a spreadsheet format used to store data in rows and columns.
+
+Q5. What is JSON?
+JSON stands for JavaScript Object Notation. It stores data in key-value format.
+
+Q6. Why do we use three file formats?
+To understand how to store, read and analyze data in different formats.
+
+Q7. What is the use of read_csv()?
+It reads data from a CSV file.
+
+Q8. What is the use of to_excel()?
+It saves data into an Excel file.
+
+Q9. What is the use of to_json()?
+It converts and saves data into JSON format.
+
+Q10. What is data cleaning?
+Data cleaning means removing duplicate records and handling missing values.
+
+Q11. What is a missing value?
+A missing value is an empty or unavailable value in a dataset.
+
+Q12. What is the use of dropna()?
+It removes rows containing missing values.
+
+Q13. What is the use of drop_duplicates()?
+It removes repeated records from the dataset.
+
+Q14. What is data transformation?
+Data transformation means converting data into a useful format for analysis.
+
+Q15. Why do we use pd.to_datetime()?
+It converts the Order Date column into date format.
+
+Q16. How do you calculate Profit Percentage?
+Profit Percentage = (Profit / Sales) × 100.
+
+Q17. What is data aggregation?
+Data aggregation means summarizing data using calculations such as sum, average and count.
+
+Q18. What is the use of groupby()?
+It groups data based on a particular column. Here, it calculates total sales for each category.
+
+Q19. What is the use of sum()?
+It calculates the total value.
+
+Q20. What is the use of mean()?
+It calculates the average value.
+
+Q21. What is data visualization?
+Data visualization means presenting data using graphs and charts.
+
+Q22. What is a bar chart?
+A bar chart compares sales between different product categories.
+
+Q23. What is a pie chart?
+A pie chart shows the percentage distribution of categories.
+
+Q24. What is a box plot?
+A box plot shows the distribution of data and helps identify outliers.
+
+Q25. Which library is used to create graphs?
+Matplotlib.
